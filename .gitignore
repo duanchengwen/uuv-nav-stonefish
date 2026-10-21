@@ -1,0 +1,24 @@
+# Build outputs
+build/
+build_*/
+install_*/
+
+# Raw episodes are large (PNG sequences) and reproducible with scripts/collect.py
+episodes_raw/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+
+# Logs / temporary files
+*.log
+*.tmp
+*.swp
+.DS_Store
+
+# Local editor settings
+.vscode/
+.idea/

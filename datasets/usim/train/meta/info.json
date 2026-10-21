@@ -1,0 +1,134 @@
+{
+    "codebase_version": "v2.1",
+    "robot_type": "AgileBot",
+    "total_episodes": 10,
+    "total_frames": 8338,
+    "total_tasks": 1,
+    "total_videos": 20,
+    "total_chunks": 1,
+    "chunks_size": 1000,
+    "fps": 10,
+    "splits": {
+        "train": "0:10"
+    },
+    "data_path": "data/chunk-{episode_chunk:03d}/episode_{episode_index:06d}.parquet",
+    "video_path": "videos/chunk-{episode_chunk:03d}/{video_key}/episode_{episode_index:06d}.mp4",
+    "features": {
+        "observation.images.ego": {
+            "dtype": "video",
+            "shape": [
+                240,
+                320,
+                3
+            ],
+            "names": [
+                "height",
+                "width",
+                "channel"
+            ],
+            "info": {
+                "video.height": 240,
+                "video.width": 320,
+                "video.codec": "av1",
+                "video.pix_fmt": "yuv420p",
+                "video.is_depth_map": false,
+                "video.fps": 10,
+                "video.channels": 3,
+                "has_audio": false
+            }
+        },
+        "observation.images.wrist": {
+            "dtype": "video",
+            "shape": [
+                240,
+                320,
+                3
+            ],
+            "names": [
+                "height",
+                "width",
+                "channel"
+            ],
+            "info": {
+                "video.height": 240,
+                "video.width": 320,
+                "video.codec": "av1",
+                "video.pix_fmt": "yuv420p",
+                "video.is_depth_map": false,
+                "video.fps": 10,
+                "video.channels": 3,
+                "has_audio": false
+            }
+        },
+        "observation.state": {
+            "dtype": "float32",
+            "shape": [
+                29
+            ],
+            "names": [
+                "joint_pos",
+                "pwm",
+                "joint_v",
+                "dvl_v",
+                "imu_av",
+                "imu_la",
+                "pressure",
+                "dvl_h"
+            ]
+        },
+        "action": {
+            "dtype": "float32",
+            "shape": [
+                13
+            ],
+            "names": [
+                "joint_pos",
+                "pwm"
+            ]
+        },
+        "target_pos": {
+            "dtype": "float32",
+            "shape": [
+                6
+            ],
+            "names": [
+                "target_pos"
+            ]
+        },
+        "timestamp": {
+            "dtype": "float32",
+            "shape": [
+                1
+            ],
+            "names": null
+        },
+        "frame_index": {
+            "dtype": "int64",
+            "shape": [
+                1
+            ],
+            "names": null
+        },
+        "episode_index": {
+            "dtype": "int64",
+            "shape": [
+                1
+            ],
+            "names": null
+        },
+        "index": {
+            "dtype": "int64",
+            "shape": [
+                1
+            ],
+            "names": null
+        },
+        "task_index": {
+            "dtype": "int64",
+            "shape": [
+                1
+            ],
+            "names": null
+        }
+    }
+}
