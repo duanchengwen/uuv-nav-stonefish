@@ -22,11 +22,20 @@ Each directory contains:
 
 ```bash
 cd /path/to/uuv_charge_nav
-export LD_LIBRARY_PATH=/path/to/stonefish/install_stonefish/lib:$LD_LIBRARY_PATH
 
+# One command: copies the scene to episodes_raw/run_<split>_<episode> and launches it
+./scripts/run_scene.sh scenes/train/episode_000000
+
+# Another terminal, for ROS 2 / RViz:
+./ros2/run_camera_view.sh "$PWD/episodes_raw/run_train_episode_000000"
+```
+
+Or manually:
+
+```bash
+export LD_LIBRARY_PATH=/path/to/stonefish/install_stonefish/lib:$LD_LIBRARY_PATH
 mkdir -p episodes_raw/demo_run
 cp scenes/train/episode_000000/* episodes_raw/demo_run/
-
 ./build/uuv_nav \
   --scene "$PWD/episodes_raw/demo_run/scene.scn" \
   --episode-dir "$PWD/episodes_raw/demo_run"

@@ -42,6 +42,7 @@ stonefish/
     │   ├── generate_episode.py         # A* 场景/路径/障碍生成器
     │   ├── collect.py                  # 批量采集 episode
     │   ├── collect_and_convert.sh      # 采集 + 转换 + 校验
+    │   ├── run_scene.sh                # 一键切换并运行 scenes/ 里的场景
     │   ├── convert_to_lerobot.py       # 原始数据 -> LeRobot v2.1
     │   ├── validate_lerobot.py         # 数据集结构/视频/维度校验
     │   ├── summarize.py                # 原始 episode 质量汇总
@@ -153,8 +154,7 @@ mkdir -p episodes_raw/demo_run
 cp examples/demo_episode/* episodes_raw/demo_run/
 ./build/uuv_nav \
   --scene "$PWD/episodes_raw/demo_run/scene.scn" \
-  --episode-dir "$PWD/episodes_raw/demo_run" \
-  --show-camera          # 主窗口叠加前视 ego 相机画面
+  --episode-dir "$PWD/episodes_raw/demo_run"
 ```
 
 > 示例数据默认使用 `success_radius=0.80 m`、`success_yaw=0.40 rad`，便于稳定停靠；
@@ -289,6 +289,48 @@ python scripts/train.py pi05_u0bot \
 `openpi_ext/u0bot_policy.py` 复制到 `src/openpi/policies/`，并把
 `openpi_ext/config_snippet.py` 中的 `LeRobotU0BotDataConfig` / `TrainConfig`
 加入 `src/openpi/training/config.py`。
+
+---
+
+## 5.1 切换场景
+
+程序在启动时加载一个 `scene.scn`，**不支持运行中热切换**；换场景需要退出后重新启动。
+Stonefish 主窗口只显示 3D 仿真视图；两路相机画面通过 ROS 2 发布，在 RViz 中查看。
+`scenes/` 里保存了示例数据集对应的 13 个场景，可以一键运行任意一个：
+
+```bash
+# 训练集第 4 个场景
+./scripts/run_scene.sh scenes/train/episode_000003
+
+# 测试集第 2 个场景
+./scripts/run_scene.sh scenes/test/episode_000001
+```
+
+脚本会把场景复制到 `episodes_raw/run_<split>_<episode>/`（避免污染 `scenes/` 快照），
+启动仿真并打印对应的 ROS 2 命令。ROS 2 / RViz：
+
+```bash
+./ros2/run_camera_view.sh "$PWD/episodes_raw/run_test_episode_000001"
+```
+
+想生成**新的**场景（不限 13 个）：
+
+```bash
+source ../.venv/bin/activate
+python scripts/generate_episode.py --out episodes_raw/my_scene --seed 12345 --split debug
+./scripts/run_scene.sh episodes_raw/my_scene
+```
+
+批量生成 + 采集：
+
+```bash
+python scripts/collect.py --split train --count 20 --start-index 10 --base-seed 30000
+```
+
+`scene.scn` 定义静态场景/机器人起点，`path.csv`/`obstacles.csv`/`episode.cfg` 分别定义
+路径、障碍圆和任务参数。若要改充电站/目标点/路线，修改
+`scripts/generate_episode.py` 顶部的 `GOAL_X/GOAL_Y`、`DOCK_X/DOCK_Y`、`centerline`、
+`AREA` 等常量后重新生成即可；不建议只手工改 `scene.scn`，否则路径和障碍可能不一致。
 
 ---
 
