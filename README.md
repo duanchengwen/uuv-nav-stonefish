@@ -6,12 +6,13 @@ UUV 的传感器布置、状态/动作定义、相机画幅、采样率与数据
 （`goto_charge_station` 导航任务）对齐，输出的数据可直接作为 **LeRobot v2.1** 数据集
 用于 **OpenPI π0.5**（`pi05_u0bot` 配置）微调。
 
-> 场景与数据管线已完成端到端验证：13 个示例 episode（10 train + 3 test）全部成功到达
-> 充电站，单集约 800–860 帧 / 81–87 秒；转换后的 LeRobot 数据集通过
-> `scripts/validate_lerobot.py` 的结构校验。
+> 场景与数据管线已完成端到端验证：13 个示例 episode（10 train + 3 test，`--jobs 3`
+> 并发采集）全部成功到达充电站；巡航深度 **2.2 m**，单集约 226–411 帧 / 24–42 秒；
+> 每集第一帧都能看到充电站目标板（6 集完整可见，7 集部分遮挡，保证至少 2/3 靶板
+> 采样点可见）。转换后的 LeRobot 数据集通过 `scripts/validate_lerobot.py` 的结构校验。
 
-> **仓库说明**：`episodes_raw/`（约 1.2 GB 原始 PNG/CSV）和 `build/` 不入库；仓库保留
-> `datasets/usim/{train,test}` 转换后的示例数据集（约 20 MB）。原始数据可用
+> **仓库说明**：`episodes_raw/`（本地原始 PNG/CSV，默认不入库）和 `build/` 不入库；
+> 仓库保留 `datasets/usim/{train,test}` 转换后的示例数据集（约 5.5 MB）。原始数据可用
 > `scripts/collect.py` 重新生成。README 命令里的
 > `/media/ai/DATA1/dcw/stonefish/uuv_charge_nav` 是开发机路径，克隆到其他位置后
 > 请替换为实际仓库路径。
@@ -76,7 +77,7 @@ pip install -r requirements.txt
 ./scripts/build.sh
 
 # 2) 采集 10 个训练集 + 3 个测试集 episode，并转换/校验
-TRAIN_COUNT=10 TEST_COUNT=3 ./scripts/collect_and_convert.sh
+TRAIN_COUNT=10 TEST_COUNT=3 JOBS=3 ./scripts/collect_and_convert.sh
 ```
 
 生成结果：
@@ -87,7 +88,8 @@ datasets/usim/train/                  # LeRobot v2.1: data/ meta/ videos/
 datasets/usim/test/
 ```
 
-单集采集约 80–95 秒（实时仿真），转换（含 AV1 编码）约 1–2 分钟。
+单集采集约 24–42 秒；`--jobs 3` 时 13 集约 3–5 分钟。转换（含 AV1 编码）也用
+`--jobs 3` 并发处理，单集约 1–2 分钟。
 
 ### 只生成一个场景预览
 
@@ -113,25 +115,29 @@ export LD_LIBRARY_PATH=/media/ai/DATA1/dcw/stonefish/install_stonefish/lib:$LD_L
 
 ## 3. 场景说明
 
-- **水域**：50 m × 30 m 浅水湖，水面 `z=0`，平坦湖底 `z=3.0 m`（Stonefish NED，z 向下）。
-- **起点**：西侧 `(-21, 11)` 附近，朝向路径切线。
+- **水域**：50 m × 30 m 浅水湖，水面 `z=0`，平坦湖底 `z=3.0 m`（Stonefish NED，z 向下）；
+  巡航深度 **2.2 m**（离底约 0.8 m）。
+- **起点**：充电站西侧 8–15 m 的随机位置，艏向朝向目标板；生成器强制目标板至少
+  2/3 采样点可见，允许岩石对目标板形成部分遮挡。
 - **充电站**：东侧 `(22.5, -11)`。包含
   - 湖底钢结构平台 + USIM `charge0/charge1` 充电垫；
   - 四根立柱支撑的水面太阳能板阵列（USIM `solar_panel` 资源）；
   - 面向来向的绿色/黄色识别靶板（`data/textures/dock_target.png`）；
   - 绿色信标灯。
-- **目标点**：`(18, -11, 1.3)`，位于靶板前方约 2.3 m，朝向充电站（yaw=0）。
-- **障碍物**：约 70–85 块岩石（`stone.obj` 随机尺度/朝向）、2 个集装箱、1 段管道、
-  两岸石块，形成带交替“闸门”的蛇形走廊；A* 路径会绕过它们。
-- **随机化**：起点、岩石位置/尺度/朝向、光照方位角/高度角、水体 Jerlov 衰减系数
-  （0.12–0.26）逐 episode 变化。
+- **目标点**：`(18, -11, 2.2)`，位于靶板前方约 2.3 m，朝向充电站（yaw=0）。
+- **障碍物**：14–26 块随机岩石（`stone.obj` 随机尺度/朝向）、3–6 个随机闸门、
+  1–2 个集装箱、可选管道，以及背景石块/水草；闸门随机分布在起终点之间，
+  可能靠近甚至部分遮挡目标板。A* 路径会绕开它们。
+- **随机化**：起点距离/方位、闸门数量/位置/侧向/尺度、集装箱/管道、背景岩石、
+  目标遮挡程度、光照方位/高度、水体 Jerlov 系数（0.10–0.18）逐 episode 变化。
 - **专家策略**：
   1. 生成阶段在 0.5 m 栅格上用 A*（障碍按机器人半径膨胀）规划全局路径；
   2. 运行时用纯追踪（lookahead 1.0 m，近障时 0.55 m）跟踪路径；
   3. 前视 90°/128 波束多波束声呐做局部排斥/减速，处理未建模或动态障碍；
   4. 串级速度控制 + PD 姿态 → 8 推进器归一化 PWM；
-  5. 终点判定：距目标 < 0.8 m、艏向误差 < 0.4 rad、速度 < 0.55 m/s 连续 2 帧。
-- **失败判定**：与障碍圆/湖底/水面碰撞，或超过 150 s。
+  5. 终点判定：距目标 < 0.30 m、艏向误差 < 0.10 rad、速度 < 0.55 m/s 连续 2 帧；
+     末段使用带符号的刹车逻辑，避免越过目标后震荡。
+- **失败判定**：与障碍圆/湖底/水面碰撞，或超过 75 s。
 
 
 每集的 `preview.png` 可直接查看障碍、A* 路径、起点/目标/充电站相对位置。
@@ -141,9 +147,13 @@ export LD_LIBRARY_PATH=/media/ai/DATA1/dcw/stonefish/install_stonefish/lib:$LD_L
 
 ### 示例画面
 
-| 俯视路径 | 避障途中（ego） | 接近充电站（ego） |
-|---|---|---|
-| ![preview](docs/images/scene_preview.png) | ![slalom](docs/images/ego_slalom.png) | ![dock](docs/images/ego_dock.png) |
+| 起点：目标部分遮挡（2/3） | 起点：目标清晰（3/3） | 避障途中（ego） | 接近充电站（ego） |
+|---|---|---|---|
+| ![start partial](docs/images/ego_start_partial.png) | ![start clear](docs/images/ego_start_clear.png) | ![slalom](docs/images/ego_slalom.png) | ![dock](docs/images/ego_dock.png) |
+
+13 集首帧拼图（含每集 seed / 目标可见采样点数）：
+[first_frames_contact.png](docs/images/first_frames_contact.png)；俯视路径：
+[scene_preview.png](docs/images/scene_preview.png)。
 
 `examples/demo_episode/` 是一个可直接运行的示例 episode（只含
 `scene.scn`、`path.csv`、`obstacles.csv`、`episode.cfg`）：
@@ -157,10 +167,9 @@ cp examples/demo_episode/* episodes_raw/demo_run/
   --episode-dir "$PWD/episodes_raw/demo_run"
 ```
 
-> 示例数据默认使用 `success_radius=0.80 m`、`success_yaw=0.40 rad`，便于稳定停靠；
-> USIM 的路径跟踪器使用 0.30 m / 0.10 rad。若要与 USIM 完全一致，采集时加：
-> `--success-radius 0.30 --success-yaw 0.10`。该配置已用完整 48 m 路径验证：
-> 成功停靠到 0.261 m（863 帧 / 87.5 s）。
+> 新数据集使用与 USIM 路径跟踪器对齐的 `success_radius=0.30 m`、
+> `success_yaw=0.10 rad`。13 集全部成功停靠，最终距离 0.27–0.29 m。
+> 采集可用 `--jobs 3` 并发运行多个 Stonefish 实例；已在同一 GPU 上验证。
 
 ---
 
@@ -239,7 +248,7 @@ datasets/usim/train/
 - 视频：AV1 / yuv420p / 320×240 / 10 fps / 无音频。
 - Parquet：`observation.state` `fixed_size_list<float>[29]`，`action [13]`，
   `target_pos [6]`，以及 `timestamp/frame_index/episode_index/index/task_index`。
-- 时长与帧数：10 Hz；每集约 800–900 帧（80–90 s）。
+- 时长与帧数：10 Hz；每集约 226–411 帧（24–42 s）；train 平均 29.0 s，test 平均 26.5 s。
 - `scripts/validate_lerobot.py` 会检查 codec、分辨率、帧数、维度、`action[5:13] == state[5:13]`、
   有限值、帧索引连续、meta 计数等。
 
@@ -378,18 +387,21 @@ python scripts/validate_lerobot.py --dataset datasets/usim/test
 
 当前仓库内已生成的示例数据集：
 
-| split | episodes | frames | 平均时长 | 采集成功率 | 路径长度 | 最小障碍间距 |
-|---|---:|---:|---:|---:|---:|---:|
-| train | 10 | 8,338 | 84.6 s | 10/10 | 46.5–50.4 m | 0.31–0.68 m |
-| test | 3 | 2,498 | 83.3 s | 3/3 | 47.9–50.1 m | 0.51–0.56 m |
+| split | episodes | frames | 平均时长 | 采集成功率 | 路径长度 | 最小障碍间距 | 首帧目标可见 |
+|---|---:|---:|---:|---:|---:|---:|---|
+| train | 10 | 2,776 | 29.0 s | 10/10 | 8.8–16.4 m | 0.55–1.04 m | 3 完整 / 7 部分 |
+| test | 3 | 758 | 26.5 s | 3/3 | 9.6–11.6 m | 0.45–1.03 m | 3 完整 / 0 部分 |
+
+> 采集参数：深度 2.2 m，`success_radius=0.30 m`，`success_yaw=0.10 rad`，
+> `--jobs 3` 并发。13 集全部成功，最终停靠距离 0.27–0.29 m。
 
 校验输出示例（每集都会打印一行）：
 
 ```
-episode 000000: 846 frames ok
+episode 000000: 312 frames ok
 ...
 dataset: datasets/usim/train
-episodes: 10  frames: 8338  fps: 10
+episodes: 10  frames: 2776  fps: 10
 state [29] action [13] target [6]
 OK: dataset is structurally compatible with USIM / LeRobot v2.1 / openpi pi05_u0bot
 ```
@@ -413,7 +425,13 @@ OK: dataset is structurally compatible with USIM / LeRobot v2.1 / openpi pi05_u0
 5. **无机械臂**：为对齐 USIM 导航任务，机械臂维度恒为 0；若要做 USIM 抓取任务，
    需要接入 Alpha5 + Robotiq 资源（见 u0env）。
 6. **仿真渲染依赖 GPU/OpenGL**：需要可用的 X Display（当前 `:1`）；无显示器时可用
-   `xvfb-run -a`，但速度会下降。
+   `xvfb-run -a`，但速度会下降。并发采集时每个 job 会打开一个 Stonefish 窗口，
+   建议 2–3 个；更多实例会争抢 GPU/CPU 渲染带宽。
+7. **首帧目标可见性**：13 集中 6 集完整可见、7 集部分遮挡（至少 2/3 靶板采样点可见）。
+   部分遮挡是有意保留的场景多样性；若训练需要目标完全无遮挡，可把生成器的
+   `target_visible < 2` 改为 `< 3` 后重新生成。
+8. **巡航深度 2.2 m**：离底约 0.8 m；DVL 对底高度约 0.6–0.7 m，接近 DVL 最小量程但
+   仍在 0.2–100 m 范围内。若继续下潜，需要同步调整 DVL/碰撞判定。
 
 ---
 

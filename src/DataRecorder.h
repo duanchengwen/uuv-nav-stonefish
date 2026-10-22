@@ -20,7 +20,8 @@ public:
     void addFrame(int frameIndex, double timestamp, const std::array<float, 29>& state,
                   const std::array<float, 13>& action, const std::array<float, 6>& target,
                   const std::array<double, 3>& position, double dvlAltitude, double goalDistance,
-                  double minSonar, bool avoidance, const cv::Mat& egoBgr, const cv::Mat& wristBgr);
+                  double minSonar, bool avoidance, double yaw, const cv::Mat& egoBgr,
+                  const cv::Mat& wristBgr);
 
     void finalize(bool success, const std::string& reason, double simTime, double goalDistance,
                   double minClearance, const std::string& extra = "");
@@ -33,6 +34,8 @@ private:
     std::string wristDir_;
     std::ofstream stream_;
     int frameCount_ = 0;
+    double goalX_ = 0.0;
+    double goalY_ = 0.0;
     cv::Mat lastEgo_;
     cv::Mat lastWrist_;
 };

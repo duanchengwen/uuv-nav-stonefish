@@ -8,19 +8,29 @@ USIM `goto_charge_station` schema.
 
 - Instruction: **"Go to the charge station"**
 - Robot: BlueROV2, 8 thrusters, no manipulator (USIM navigation configuration)
-- Scene: 50 m x 30 m shallow lake with a serpentine rock field, containers, a pipeline,
-  and a solar-powered charging dock; the UUV must avoid obstacles and dock.
-- Expert: A* global path + pure-pursuit tracking + 90 deg multibeam local avoidance.
+- Scene: 50 m x 30 m shallow lake, cruise depth **2.2 m** (0.8 m above the seabed),
+  with a rock slalom, containers, a pipeline, and a solar-powered charging dock.
+- Start: 8-15 m from the dock, facing the charging target. The green/yellow target
+  board is visible in the first camera frame, matching the USIM navigation setup.
+- Expert: A* global path + pure-pursuit tracking + 90 deg multibeam local avoidance +
+  terminal docking control (success radius 0.30 m, heading error 0.10 rad).
 
 ## Splits
 
 | Split | Episodes | Frames | Average episode |
 |---|---:|---:|---:|
-| train | 10 | 8338 | 84.6 s |
-| test | 3 | 2498 | 84.5 s |
+| train | 10 | 2776 | 29.0 s |
+| test | 3 | 758 | 26.5 s |
 
 All episodes are successful expert demonstrations (collection failures are discarded
-before conversion). Each episode is 10 Hz.
+before conversion). Each episode is 10 Hz and starts with the charging station in view.
+
+Start visibility (target board, 3 sample points):
+
+| Split | Fully visible (3/3) | Partially occluded (2/3) |
+|---|---:|---:|
+| train | 3 | 7 |
+| test | 3 | 0 |
 
 ## Observations / actions
 

@@ -1,6 +1,9 @@
 # Generated Stonefish scenarios
 
 These are the exact scenarios used for the 13-episode sample dataset.
+All scenes use **cruise depth 2.2 m** (0.8 m above the seabed) and are generated so the
+charging target board is visible in the first camera frame: 3/3 board samples in some
+episodes, 2/3 (partial rock occlusion) in others.
 
 ```
 scenes/
@@ -15,7 +18,7 @@ Each directory contains:
 | `scene.scn` | Complete Stonefish scenario: lake, rocks, containers, pipeline, charging dock, BlueROV2 include |
 | `path.csv` | Dense A* path (`x,y,z,yaw`, ~0.25 m spacing) |
 | `obstacles.csv` | Circular obstacle approximation used by A* and collision checks |
-| `episode.cfg` | Task, seed, start/goal pose, depth, success radius/yaw, timeout |
+| `episode.cfg` | Task, seed, start/goal pose, depth, success radius/yaw, target visibility, timeout |
 | `preview.png` | Top-down view of obstacles, path, start, goal, dock |
 
 ## Run one scene
@@ -45,6 +48,13 @@ The app writes `images/ego`, `images/wrist`, `samples.csv` and `result.txt` into
 `episodes_raw/demo_run`. The Stonefish data directory must contain the assets in
 `data/` and the robot include `data/scenes/robots/bluerov2_usim_nav.scn`; the
 build compiles the data path, so build the app from this repository after cloning.
+
+For parallel collection of new scenes, `scripts/collect.py` supports `--jobs 3`
+(each job opens its own Stonefish window on the same GPU):
+
+```bash
+python scripts/collect.py --split train --count 10 --jobs 3
+```
 
 To also stream both cameras to ROS 2 / RViz:
 

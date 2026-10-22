@@ -3,7 +3,7 @@
 	<environment>
 		<ned latitude="56.136459" longitude="-2.706819"/>
 		<ocean>
-			<water density="1031.0" jerlov="0.255"/>
+			<water density="1031.0" jerlov="0.151"/>
 			<waves height="0.0"/>
 			<particles enabled="true"/>
 			<current type="uniform">
@@ -16,7 +16,7 @@
 			</current>
 		</ocean>
 		<atmosphere>
-			<sun azimuth="-143.8" elevation="38.5"/>
+			<sun azimuth="-79.0" elevation="47.5"/>
 		</atmosphere>
 	</environment>
 
@@ -76,978 +76,458 @@
 
 	<include file="scenes/robots/bluerov2_usim_nav.scn">
 		<arg name="vehicle_name" value="bluerov2"/>
-		<arg name="position" value="-20.500 11.500 1.300"/>
-		<arg name="orientation" value="0.000 0.000 1.326"/>
+		<arg name="position" value="8.929 -1.451 2.200"/>
+		<arg name="orientation" value="0.000 0.000 -0.699"/>
 	</include>
 
 	<static name="rock_00" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="4.512"/>
+			<mesh filename="stone/stone.obj" scale="4.589"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-21.595 8.073 2.408" rpy="0.0 0.0 2.976"/>
+		<world_transform xyz="12.432 -2.510 2.398" rpy="0.0 0.0 2.910"/>
 	</static>
 
 	<static name="rock_01" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.867"/>
+			<mesh filename="stone/stone.obj" scale="3.013"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-18.546 12.503 2.499" rpy="0.0 0.0 1.137"/>
+		<world_transform xyz="14.285 -3.951 2.618" rpy="0.0 0.0 2.711"/>
 	</static>
 
 	<static name="rock_02" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="4.344"/>
+			<mesh filename="stone/stone.obj" scale="4.816"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-17.356 11.452 2.432" rpy="0.0 0.0 1.514"/>
+		<world_transform xyz="15.314 -3.624 2.366" rpy="0.0 0.0 -1.302"/>
 	</static>
 
 	<static name="rock_03" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="4.520"/>
+			<mesh filename="stone/stone.obj" scale="5.315"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-19.233 6.231 2.407" rpy="0.0 0.0 0.078"/>
+		<world_transform xyz="12.633 -10.958 2.296" rpy="0.0 0.0 -2.002"/>
 	</static>
 
 	<static name="rock_04" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="4.360"/>
+			<mesh filename="stone/stone.obj" scale="5.146"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-16.565 10.574 2.430" rpy="0.0 0.0 0.650"/>
+		<world_transform xyz="15.370 -9.889 2.320" rpy="0.0 0.0 0.244"/>
 	</static>
 
 	<static name="rock_05" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="4.217"/>
+			<mesh filename="stone/stone.obj" scale="4.348"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-14.114 6.820 2.450" rpy="0.0 0.0 -2.603"/>
+		<world_transform xyz="-2.545 0.967 2.431" rpy="0.0 0.0 0.661"/>
 	</static>
 
 	<static name="rock_06" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.413"/>
+			<mesh filename="stone/stone.obj" scale="3.478"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-17.295 11.281 2.562" rpy="0.0 0.0 0.887"/>
+		<world_transform xyz="-5.183 8.671 2.553" rpy="0.0 0.0 -0.165"/>
 	</static>
 
 	<static name="rock_07" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.888"/>
+			<mesh filename="stone/stone.obj" scale="2.863"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-13.135 7.894 2.496" rpy="0.0 0.0 -0.652"/>
+		<world_transform xyz="18.003 10.312 2.639" rpy="0.0 0.0 3.005"/>
 	</static>
 
 	<static name="rock_08" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.477"/>
+			<mesh filename="stone/stone.obj" scale="2.857"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-15.873 8.588 2.553" rpy="0.0 0.0 1.643"/>
+		<world_transform xyz="10.211 -5.924 2.640" rpy="0.0 0.0 2.565"/>
 	</static>
 
 	<static name="rock_09" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.168"/>
+			<mesh filename="stone/stone.obj" scale="4.473"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-11.551 11.844 2.597" rpy="0.0 0.0 -0.131"/>
+		<world_transform xyz="11.179 10.411 2.414" rpy="0.0 0.0 -2.988"/>
 	</static>
 
 	<static name="rock_10" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.769"/>
+			<mesh filename="stone/stone.obj" scale="3.225"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-10.862 10.883 2.512" rpy="0.0 0.0 -0.569"/>
+		<world_transform xyz="-14.063 4.929 2.588" rpy="0.0 0.0 -0.773"/>
 	</static>
 
 	<static name="rock_11" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.196"/>
+			<mesh filename="stone/stone.obj" scale="4.731"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-10.055 9.959 2.593" rpy="0.0 0.0 1.590"/>
+		<world_transform xyz="13.466 9.276 2.378" rpy="0.0 0.0 -0.096"/>
 	</static>
 
 	<static name="rock_12" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.730"/>
+			<mesh filename="stone/stone.obj" scale="3.190"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-12.920 5.539 2.518" rpy="0.0 0.0 2.808"/>
+		<world_transform xyz="-0.123 -1.148 2.593" rpy="0.0 0.0 0.421"/>
 	</static>
 
 	<static name="rock_13" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.040"/>
+			<mesh filename="stone/stone.obj" scale="4.457"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-8.991 8.825 2.614" rpy="0.0 0.0 -0.893"/>
+		<world_transform xyz="5.218 -1.092 2.416" rpy="0.0 0.0 0.046"/>
 	</static>
 
 	<static name="rock_14" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="4.434"/>
+			<mesh filename="stone/stone.obj" scale="2.783"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-12.532 4.902 2.419" rpy="0.0 0.0 1.735"/>
+		<world_transform xyz="5.043 -11.217 2.650" rpy="0.0 0.0 2.940"/>
 	</static>
 
 	<static name="rock_15" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.283"/>
+			<mesh filename="stone/stone.obj" scale="3.294"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-7.835 7.651 2.580" rpy="0.0 0.0 -0.923"/>
+		<world_transform xyz="-5.907 5.886 2.579" rpy="0.0 0.0 -2.932"/>
 	</static>
 
 	<static name="rock_16" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="4.287"/>
+			<mesh filename="stone/stone.obj" scale="4.785"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-11.084 3.224 2.440" rpy="0.0 0.0 0.843"/>
+		<world_transform xyz="5.795 -6.709 2.370" rpy="0.0 0.0 2.258"/>
 	</static>
 
 	<static name="rock_17" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="4.096"/>
+			<mesh filename="stone/stone.obj" scale="4.267"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-10.920 2.339 2.467" rpy="0.0 0.0 1.529"/>
+		<world_transform xyz="-5.024 11.956 2.443" rpy="0.0 0.0 -2.808"/>
 	</static>
 
 	<static name="rock_18" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.574"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-6.366 5.827 2.400" rpy="0.0 0.0 1.510"/>
-	</static>
-
-	<static name="rock_19" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.111"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-9.930 1.481 2.604" rpy="0.0 0.0 -0.041"/>
-	</static>
-
-	<static name="rock_20" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.406"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-6.076 4.661 2.563" rpy="0.0 0.0 -0.865"/>
-	</static>
-
-	<static name="rock_21" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.116"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-6.345 -1.131 2.464" rpy="0.0 0.0 -0.074"/>
-	</static>
-
-	<static name="rock_22" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.055"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-4.294 3.748 2.472" rpy="0.0 0.0 -0.742"/>
-	</static>
-
-	<static name="rock_23" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.148"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-5.884 -1.298 2.459" rpy="0.0 0.0 0.803"/>
-	</static>
-
-	<static name="rock_24" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.895"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-3.599 3.779 2.495" rpy="0.0 0.0 -0.176"/>
-	</static>
-
-	<static name="rock_25" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.511"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-4.320 -2.055 2.548" rpy="0.0 0.0 -0.912"/>
-	</static>
-
-	<static name="rock_26" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.102"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-2.421 3.242 2.466" rpy="0.0 0.0 -1.743"/>
-	</static>
-
-	<static name="rock_27" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.393"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="1.031 -0.530 2.565" rpy="0.0 0.0 -2.523"/>
-	</static>
-
-	<static name="rock_28" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.159"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-3.192 2.418 2.598" rpy="0.0 0.0 -1.989"/>
-	</static>
-
-	<static name="rock_29" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.985"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="1.839 -0.035 2.482" rpy="0.0 0.0 2.149"/>
-	</static>
-
-	<static name="rock_30" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.937"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-0.847 4.909 2.489" rpy="0.0 0.0 0.383"/>
-	</static>
-
-	<static name="rock_31" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.057"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="3.855 2.234 2.472" rpy="0.0 0.0 -2.939"/>
-	</static>
-
-	<static name="rock_32" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.350"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="0.185 6.007 2.431" rpy="0.0 0.0 0.613"/>
-	</static>
-
-	<static name="rock_33" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.453"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="2.426 0.712 2.557" rpy="0.0 0.0 -1.585"/>
-	</static>
-
-	<static name="rock_34" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.013"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="5.238 5.267 2.478" rpy="0.0 0.0 2.396"/>
-	</static>
-
-	<static name="rock_35" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.724"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="3.353 -0.287 2.519" rpy="0.0 0.0 2.418"/>
-	</static>
-
-	<static name="rock_36" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.129"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="6.503 4.458 2.602" rpy="0.0 0.0 2.562"/>
-	</static>
-
-	<static name="rock_37" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.291"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="4.219 -1.005 2.439" rpy="0.0 0.0 3.030"/>
-	</static>
-
-	<static name="rock_38" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.286"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="7.656 3.215 2.440" rpy="0.0 0.0 1.601"/>
-	</static>
-
-	<static name="rock_39" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.666"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="4.700 -1.694 2.527" rpy="0.0 0.0 -1.080"/>
-	</static>
-
-	<static name="rock_40" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.273"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="9.011 1.876 2.442" rpy="0.0 0.0 0.592"/>
-	</static>
-
-	<static name="rock_41" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.297"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="5.286 -2.430 2.578" rpy="0.0 0.0 2.749"/>
-	</static>
-
-	<static name="rock_42" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.128"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="9.800 0.484 2.462" rpy="0.0 0.0 -1.711"/>
-	</static>
-
-	<static name="rock_43" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.498"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="10.541 -0.375 2.550" rpy="0.0 0.0 1.888"/>
-	</static>
-
-	<static name="rock_44" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.945"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="6.786 -4.642 2.488" rpy="0.0 0.0 0.235"/>
-	</static>
-
-	<static name="rock_45" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.459"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="8.744 -6.597 2.556" rpy="0.0 0.0 3.109"/>
-	</static>
-
-	<static name="rock_46" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.815"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="11.575 -2.250 2.506" rpy="0.0 0.0 -1.901"/>
-	</static>
-
-	<static name="rock_47" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.802"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="9.677 -7.172 2.508" rpy="0.0 0.0 -1.666"/>
-	</static>
-
-	<static name="rock_48" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.021"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="12.882 -2.538 2.617" rpy="0.0 0.0 0.714"/>
-	</static>
-
-	<static name="rock_49" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.306"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="10.987 -7.947 2.437" rpy="0.0 0.0 -1.949"/>
-	</static>
-
-	<static name="rock_50" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.009"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="13.398 -2.914 2.619" rpy="0.0 0.0 -1.638"/>
-	</static>
-
-	<static name="rock_51" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.832"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="12.638 -9.251 2.504" rpy="0.0 0.0 3.014"/>
-	</static>
-
-	<static name="rock_52" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.522"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="16.023 -5.546 2.407" rpy="0.0 0.0 2.213"/>
-	</static>
-
-	<static name="rock_53" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.136"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="13.533 -10.214 2.461" rpy="0.0 0.0 -0.173"/>
-	</static>
-
-	<static name="rock_54" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.494"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="16.998 -6.262 2.411" rpy="0.0 0.0 1.536"/>
-	</static>
-
-	<static name="rock_55" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.602"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="14.168 -10.785 2.536" rpy="0.0 0.0 -2.896"/>
-	</static>
-
-	<static name="rock_56" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.436"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="17.836 -7.196 2.559" rpy="0.0 0.0 -0.540"/>
-	</static>
-
-	<static name="rock_57" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.661"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="18.750 -7.743 2.528" rpy="0.0 0.0 2.723"/>
-	</static>
-
-	<static name="rock_58" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.841"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-12.693 10.679 2.362" rpy="0.0 0.0 0.922"/>
-	</static>
-
-	<static name="rock_59" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.730"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-11.412 12.008 2.518" rpy="0.0 0.0 -0.927"/>
-	</static>
-
-	<static name="rock_60" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.371"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-8.442 2.006 2.428" rpy="0.0 0.0 1.852"/>
-	</static>
-
-	<static name="rock_61" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.897"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-9.591 0.812 2.494" rpy="0.0 0.0 1.665"/>
-	</static>
-
-	<static name="rock_62" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.244"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-0.364 3.251 2.446" rpy="0.0 0.0 -1.772"/>
-	</static>
-
-	<static name="rock_63" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.727"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-1.490 4.412 2.518" rpy="0.0 0.0 -1.332"/>
-	</static>
-
-	<static name="rock_64" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.446"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="6.464 -1.243 2.418" rpy="0.0 0.0 0.581"/>
-	</static>
-
-	<static name="rock_65" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.934"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="5.081 -2.021 2.489" rpy="0.0 0.0 -1.239"/>
-	</static>
-
-	<static name="rock_66" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="4.441"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="14.528 -5.412 2.418" rpy="0.0 0.0 -1.181"/>
-	</static>
-
-	<static name="rock_67" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.821"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="15.261 -4.507 2.505" rpy="0.0 0.0 -2.380"/>
-	</static>
-
-	<static name="rock_68" type="model" physics="submerged">
 		<physical>
 			<mesh filename="stone/stone.obj" scale="3.076"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-0.477 -9.827 2.609" rpy="0.0 0.0 0.865"/>
+		<world_transform xyz="-11.729 -4.119 2.609" rpy="0.0 0.0 0.367"/>
 	</static>
 
-	<static name="rock_69" type="model" physics="submerged">
+	<static name="rock_19" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.350"/>
+			<mesh filename="stone/stone.obj" scale="2.670"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-4.513 -6.835 2.571" rpy="0.0 0.0 -0.843"/>
+		<world_transform xyz="-20.725 11.718 2.666" rpy="0.0 0.0 -0.314"/>
 	</static>
 
-	<static name="rock_70" type="model" physics="submerged">
+	<static name="rock_20" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.155"/>
+			<mesh filename="stone/stone.obj" scale="3.030"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-15.187 -3.728 2.598" rpy="0.0 0.0 0.799"/>
+		<world_transform xyz="-12.742 0.469 2.616" rpy="0.0 0.0 -0.728"/>
 	</static>
 
-	<static name="rock_71" type="model" physics="submerged">
+	<static name="rock_21" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.335"/>
+			<mesh filename="stone/stone.obj" scale="3.874"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-17.335 -1.336 2.573" rpy="0.0 0.0 -1.386"/>
+		<world_transform xyz="-20.415 1.067 2.498" rpy="0.0 0.0 -1.777"/>
 	</static>
 
-	<static name="rock_72" type="model" physics="submerged">
+	<static name="rock_22" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.259"/>
+			<mesh filename="stone/stone.obj" scale="2.987"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-14.171 -7.051 2.584" rpy="0.0 0.0 -0.802"/>
+		<world_transform xyz="-2.449 -5.588 2.622" rpy="0.0 0.0 0.141"/>
 	</static>
 
-	<static name="rock_73" type="model" physics="submerged">
+	<static name="rock_23" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.913"/>
+			<mesh filename="stone/stone.obj" scale="4.259"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="-10.747 -9.080 2.492" rpy="0.0 0.0 2.618"/>
+		<world_transform xyz="4.842 9.304 2.444" rpy="0.0 0.0 -1.781"/>
 	</static>
 
-	<static name="rock_74" type="model" physics="submerged">
+	<static name="rock_24" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.332"/>
+			<mesh filename="stone/stone.obj" scale="4.719"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="20.179 10.399 2.574" rpy="0.0 0.0 2.594"/>
+		<world_transform xyz="14.806 11.650 2.379" rpy="0.0 0.0 1.258"/>
 	</static>
 
-	<static name="rock_75" type="model" physics="submerged">
+	<static name="rock_25" type="model" physics="submerged">
 		<physical>
-			<mesh filename="stone/stone.obj" scale="3.380"/>
+			<mesh filename="stone/stone.obj" scale="3.963"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="rock"/>
-		<world_transform xyz="0.505 -7.425 2.567" rpy="0.0 0.0 -3.079"/>
-	</static>
-
-	<static name="rock_76" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.489"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="20.990 -2.197 2.552" rpy="0.0 0.0 -1.427"/>
-	</static>
-
-	<static name="rock_77" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.685"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="21.472 4.574 2.524" rpy="0.0 0.0 0.733"/>
-	</static>
-
-	<static name="rock_78" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="3.769"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-3.792 11.936 2.512" rpy="0.0 0.0 0.671"/>
-	</static>
-
-	<static name="rock_79" type="model" physics="submerged">
-		<physical>
-			<mesh filename="stone/stone.obj" scale="2.895"/>
-			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
-		</physical>
-		<material name="Rock"/>
-		<look name="rock"/>
-		<world_transform xyz="-12.787 -2.427 2.635" rpy="0.0 0.0 -2.286"/>
+		<world_transform xyz="-7.038 -7.712 2.485" rpy="0.0 0.0 1.034"/>
 	</static>
 
 	<static name="container_00" type="model" physics="submerged">
 		<physical>
-			<mesh filename="container/container4.obj" scale="0.866"/>
+			<mesh filename="container/container4.obj" scale="0.910"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Steel"/>
 		<look name="container"/>
-		<world_transform xyz="-13.492 1.934 2.980" rpy="0.0 0.0 -1.759"/>
+		<world_transform xyz="11.703 -9.467 2.980" rpy="0.0 0.0 -1.784"/>
 	</static>
 
 	<static name="container_01" type="model" physics="submerged">
 		<physical>
-			<mesh filename="container/container4.obj" scale="0.826"/>
+			<mesh filename="container/container4.obj" scale="0.788"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Steel"/>
 		<look name="container"/>
-		<world_transform xyz="7.493 6.561 2.980" rpy="0.0 0.0 -1.874"/>
+		<world_transform xyz="7.626 -8.070 2.980" rpy="0.0 0.0 -0.324"/>
 	</static>
 
 	<static name="pipe_00" type="model" physics="submerged">
 		<physical>
-			<mesh filename="pipe/pipe.obj" scale="0.550"/>
+			<mesh filename="pipe/pipe.obj" scale="0.514"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Steel"/>
 		<look name="pipe"/>
-		<world_transform xyz="-0.307 4.923 2.550" rpy="0.0 0.0 -0.557"/>
+		<world_transform xyz="9.477 -7.887 2.550" rpy="0.0 0.0 -0.332"/>
 	</static>
 
 	<static name="grass_00" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.770"/>
+			<mesh filename="grassstone/grass.obj" scale="1.206"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="-18.108 -4.340 2.990" rpy="0.0 0.0 1.813"/>
+		<world_transform xyz="-9.809 -8.487 2.990" rpy="0.0 0.0 -3.096"/>
 	</static>
 
 	<static name="grass_01" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.616"/>
+			<mesh filename="grassstone/grass.obj" scale="1.434"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="-18.911 3.364 2.990" rpy="0.0 0.0 -2.926"/>
+		<world_transform xyz="-17.895 11.411 2.990" rpy="0.0 0.0 -0.963"/>
 	</static>
 
 	<static name="grass_02" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.614"/>
+			<mesh filename="grassstone/grass.obj" scale="1.218"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="-17.326 3.099 2.990" rpy="0.0 0.0 -2.606"/>
+		<world_transform xyz="19.772 8.991 2.990" rpy="0.0 0.0 0.341"/>
 	</static>
 
 	<static name="grass_03" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.878"/>
+			<mesh filename="grassstone/grass.obj" scale="1.909"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="11.751 2.889 2.990" rpy="0.0 0.0 2.839"/>
+		<world_transform xyz="8.843 -4.597 2.990" rpy="0.0 0.0 -0.879"/>
 	</static>
 
 	<static name="grass_04" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.846"/>
+			<mesh filename="grassstone/grass.obj" scale="1.702"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="13.312 4.143 2.990" rpy="0.0 0.0 -3.113"/>
+		<world_transform xyz="-3.004 3.999 2.990" rpy="0.0 0.0 -2.858"/>
 	</static>
 
 	<static name="grass_05" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.841"/>
+			<mesh filename="grassstone/grass.obj" scale="1.995"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="9.571 11.475 2.990" rpy="0.0 0.0 -1.673"/>
+		<world_transform xyz="16.509 4.642 2.990" rpy="0.0 0.0 -0.684"/>
 	</static>
 
 	<static name="grass_06" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.545"/>
+			<mesh filename="grassstone/grass.obj" scale="1.646"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="19.237 -3.991 2.990" rpy="0.0 0.0 0.947"/>
+		<world_transform xyz="-5.628 -3.437 2.990" rpy="0.0 0.0 -2.019"/>
 	</static>
 
 	<static name="grass_07" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.736"/>
+			<mesh filename="grassstone/grass.obj" scale="1.382"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="-6.220 -11.863 2.990" rpy="0.0 0.0 0.590"/>
+		<world_transform xyz="-17.923 8.333 2.990" rpy="0.0 0.0 1.337"/>
 	</static>
 
 	<static name="grass_08" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.485"/>
+			<mesh filename="grassstone/grass.obj" scale="1.863"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="-17.756 -10.975 2.990" rpy="0.0 0.0 -2.830"/>
+		<world_transform xyz="8.609 3.385 2.990" rpy="0.0 0.0 2.517"/>
 	</static>
 
 	<static name="grass_09" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.266"/>
+			<mesh filename="grassstone/grass.obj" scale="1.671"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="2.305 9.607 2.990" rpy="0.0 0.0 0.780"/>
+		<world_transform xyz="-3.612 -11.037 2.990" rpy="0.0 0.0 -1.686"/>
 	</static>
 
 	<static name="grass_10" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.288"/>
+			<mesh filename="grassstone/grass.obj" scale="1.897"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="-18.179 -3.578 2.990" rpy="0.0 0.0 1.668"/>
+		<world_transform xyz="5.139 11.644 2.990" rpy="0.0 0.0 2.766"/>
 	</static>
 
 	<static name="grass_11" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.712"/>
+			<mesh filename="grassstone/grass.obj" scale="1.549"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="-15.874 -11.080 2.990" rpy="0.0 0.0 -1.308"/>
+		<world_transform xyz="-11.248 5.497 2.990" rpy="0.0 0.0 -2.545"/>
 	</static>
 
 	<static name="grass_12" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.573"/>
+			<mesh filename="grassstone/grass.obj" scale="1.965"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="-4.474 8.930 2.990" rpy="0.0 0.0 -1.535"/>
+		<world_transform xyz="8.591 -0.613 2.990" rpy="0.0 0.0 1.845"/>
 	</static>
 
 	<static name="grass_13" type="model" physics="submerged">
 		<physical>
-			<mesh filename="grassstone/grass.obj" scale="1.429"/>
+			<mesh filename="grassstone/grass.obj" scale="1.366"/>
 			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		</physical>
 		<material name="Rock"/>
 		<look name="grass"/>
-		<world_transform xyz="-13.350 -10.630 2.990" rpy="0.0 0.0 -2.348"/>
+		<world_transform xyz="11.624 3.245 2.990" rpy="0.0 0.0 -1.170"/>
+	</static>
+
+	<static name="grass_14" type="model" physics="submerged">
+		<physical>
+			<mesh filename="grassstone/grass.obj" scale="1.618"/>
+			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
+		</physical>
+		<material name="Rock"/>
+		<look name="grass"/>
+		<world_transform xyz="-8.779 -4.736 2.990" rpy="0.0 0.0 -1.482"/>
+	</static>
+
+	<static name="grass_15" type="model" physics="submerged">
+		<physical>
+			<mesh filename="grassstone/grass.obj" scale="1.415"/>
+			<origin rpy="3.14 0.0 0.0" xyz="0.0 0.0 0.0"/>
+		</physical>
+		<material name="Rock"/>
+		<look name="grass"/>
+		<world_transform xyz="1.921 9.213 2.990" rpy="0.0 0.0 -2.503"/>
 	</static>
 
 	<static name="dock_platform" type="box" physics="submerged">
@@ -1201,7 +681,7 @@
 	</static>
 
 	<static name="dock_target" type="box" physics="submerged">
-		<dimensions xyz="0.06 1.4 0.9"/>
+		<dimensions xyz="0.06 2.2 1.4"/>
 		<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
 		<material name="Aluminium"/>
 		<look name="dock_target"/>

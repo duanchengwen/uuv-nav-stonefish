@@ -8,6 +8,7 @@ import math
 import shutil
 import subprocess
 import sys
+from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import cv2
@@ -65,6 +66,8 @@ INFO_FEATURES = {
         "names": ["joint_pos", "pwm"],
     },
     "target_pos": {"dtype": "float32", "shape": [TARGET_DIM], "names": ["target_pos"]},
+    "goal_rel": {"dtype": "float32", "shape": [2], "names": ["goal_dist", "goal_bearing"]},
+    "route_rel": {"dtype": "float32", "shape": [3], "names": ["goal_dist", "route_dist", "route_bearing"]},
     "timestamp": {"dtype": "float32", "shape": [1], "names": None},
     "frame_index": {"dtype": "int64", "shape": [1], "names": None},
     "episode_index": {"dtype": "int64", "shape": [1], "names": None},
@@ -85,6 +88,9 @@ MODALITY = {
     },
     "action": {"joint_pos": {"start": 0, "end": 5}, "pwm": {"start": 5, "end": 13}},
     "target_pos": {"target_pos": {"start": 0, "end": 6}},
+    "goal_rel": {"goal_dist": {"start": 0, "end": 1}, "goal_bearing": {"start": 1, "end": 2}},
+    "route_rel": {"goal_dist": {"start": 0, "end": 1}, "route_dist": {"start": 1, "end": 2},
+                  "route_bearing": {"start": 2, "end": 3}},
     "video": {
         "ego": {"original_key": "observation.images.ego"},
         "wrist": {"original_key": "observation.images.wrist"},
@@ -112,10 +118,55 @@ def load_samples(episode: Path) -> np.ndarray:
     data = np.asarray(rows[1:], dtype=np.float64)
     if data.shape[1] != len(header):
         raise RuntimeError(f"malformed samples.csv in {episode}")
-    return data
+    return header, data
 
 
-def encode_video(images: Path, out: Path, count: int) -> None:
+def route_relative(episode: Path, header, data, lookahead: float = 5.0) -> np.ndarray:
+    """[goal_dist, dist/bearing to a look-ahead point on the planned route].
+
+    The look-ahead point is found by walking ``lookahead`` metres along path.csv from the
+    path point closest to the robot. It mirrors the global planner output that would be
+    available at deployment and keeps the route bearing small, like the expert's own inputs.
+    """
+    import csv as _csv
+
+    path = []
+    with (episode / "path.csv").open() as f:
+        for row in _csv.reader(f):
+            try:
+                path.append((float(row[0]), float(row[1])))
+            except (ValueError, IndexError):
+                continue
+    if len(path) < 2:
+        raise RuntimeError(f"path.csv missing/too short in {episode}")
+    path = np.asarray(path, dtype=np.float64)
+
+    yaw = data[:, header.index("yaw")]
+    px = data[:, header.index("pos_x")]
+    py = data[:, header.index("pos_y")]
+    gd = data[:, header.index("goal_dist")]
+    out = np.zeros((data.shape[0], 3), dtype=np.float32)
+    for k in range(data.shape[0]):
+        i = int(np.argmin(np.hypot(path[:, 0] - px[k], path[:, 1] - py[k])))
+        acc = 0.0
+        while i + 1 < len(path) and acc < lookahead:
+            acc += float(np.hypot(path[i + 1, 0] - path[i, 0], path[i + 1, 1] - path[i, 1]))
+            i += 1
+        dx = path[i, 0] - px[k]
+        dy = path[i, 1] - py[k]
+        world = math.atan2(dy, dx)
+        bearing = math.atan2(math.sin(world - yaw[k]), math.cos(world - yaw[k]))
+        out[k] = (gd[k], float(np.hypot(dx, dy)), bearing)
+    return out
+
+
+def goal_relative(header, data) -> np.ndarray:
+    """[distance, bearing] of the goal in the robot body frame (bearing + = right)."""
+    return np.stack([data[:, header.index("goal_dist")],
+                     data[:, header.index("goal_bearing")]], axis=1).astype(np.float32)
+
+
+def encode_video(images: Path, out: Path, count: int, threads: int = 8) -> None:
     out.parent.mkdir(parents=True, exist_ok=True)
     cmd = [
         "ffmpeg", "-y", "-hide_banner", "-loglevel", "error",
@@ -123,7 +174,7 @@ def encode_video(images: Path, out: Path, count: int) -> None:
         "-i", str(images / "%06d.png"),
         "-frames:v", str(count),
         "-c:v", "libaom-av1", "-crf", "28", "-b:v", "0",
-        "-cpu-used", "8", "-row-mt", "1", "-threads", "8",
+        "-cpu-used", "8", "-row-mt", "1", "-threads", str(threads),
         "-pix_fmt", "yuv420p", "-movflags", "+faststart",
         str(out),
     ]
@@ -184,11 +235,13 @@ def scalar_stats(values: np.ndarray, dtype=float) -> dict:
 
 
 def make_parquet(episode: Path, out: Path, episode_index: int, global_index: int) -> tuple[int, np.ndarray]:
-    data = load_samples(episode)
+    header, data = load_samples(episode)
     n = data.shape[0]
     state = data[:, 1:30].astype(np.float32)
     action = data[:, 30:43].astype(np.float32)
     target = data[:, 43:49].astype(np.float32)
+    goal_rel = goal_relative(header, data)
+    route_rel = route_relative(episode, header, data)
     timestamp = (np.arange(n, dtype=np.float32) / float(FPS)).astype(np.float32)
     frame_index = np.arange(n, dtype=np.int64)
     ep_index = np.full(n, episode_index, dtype=np.int64)
@@ -200,6 +253,8 @@ def make_parquet(episode: Path, out: Path, episode_index: int, global_index: int
             pa.field("observation.state", pa.list_(pa.float32(), STATE_DIM)),
             pa.field("action", pa.list_(pa.float32(), ACTION_DIM)),
             pa.field("target_pos", pa.list_(pa.float32(), TARGET_DIM)),
+            pa.field("goal_rel", pa.list_(pa.float32(), 2)),
+            pa.field("route_rel", pa.list_(pa.float32(), 3)),
             pa.field("timestamp", pa.float32()),
             pa.field("frame_index", pa.int64()),
             pa.field("episode_index", pa.int64()),
@@ -213,6 +268,8 @@ def make_parquet(episode: Path, out: Path, episode_index: int, global_index: int
                 "observation.state": {"feature": {"dtype": "float32", "_type": "Value"}, "length": STATE_DIM, "_type": "List"},
                 "action": {"feature": {"dtype": "float32", "_type": "Value"}, "length": ACTION_DIM, "_type": "List"},
                 "target_pos": {"feature": {"dtype": "float32", "_type": "Value"}, "length": TARGET_DIM, "_type": "List"},
+                "goal_rel": {"feature": {"dtype": "float32", "_type": "Value"}, "length": 2, "_type": "List"},
+                "route_rel": {"feature": {"dtype": "float32", "_type": "Value"}, "length": 3, "_type": "List"},
                 "timestamp": {"dtype": "float32", "_type": "Value"},
                 "frame_index": {"dtype": "int64", "_type": "Value"},
                 "episode_index": {"dtype": "int64", "_type": "Value"},
@@ -228,6 +285,8 @@ def make_parquet(episode: Path, out: Path, episode_index: int, global_index: int
             pa.FixedSizeListArray.from_arrays(pa.array(state.reshape(-1), type=pa.float32()), STATE_DIM),
             pa.FixedSizeListArray.from_arrays(pa.array(action.reshape(-1), type=pa.float32()), ACTION_DIM),
             pa.FixedSizeListArray.from_arrays(pa.array(target.reshape(-1), type=pa.float32()), TARGET_DIM),
+            pa.FixedSizeListArray.from_arrays(pa.array(goal_rel.reshape(-1), type=pa.float32()), 2),
+            pa.FixedSizeListArray.from_arrays(pa.array(route_rel.reshape(-1), type=pa.float32()), 3),
             pa.array(timestamp),
             pa.array(frame_index),
             pa.array(ep_index),
@@ -247,7 +306,9 @@ def main() -> None:
     parser.add_argument("--out", required=True, help="output LeRobot dataset root")
     parser.add_argument("--split", default="train")
     parser.add_argument("--include-failed", action="store_true")
+    parser.add_argument("--jobs", type=int, default=1, help="parallel episode conversions")
     args = parser.parse_args()
+    jobs = args.jobs
 
     raw_root = Path(args.raw)
     out_root = Path(args.out)
@@ -277,8 +338,18 @@ def main() -> None:
     stats_lines = []
     print(f"converting {len(episodes)} episodes -> {out_root}")
 
-    for out_idx, (episode, result) in enumerate(episodes):
-        n = len(load_samples(episode))
+    lengths = [load_samples(ep)[1].shape[0] for ep, _ in episodes]
+    offsets = []
+    acc = 0
+    for n_i in lengths:
+        offsets.append(acc)
+        acc += n_i
+    total_frames = acc
+
+    def work(out_idx: int):
+        episode, _ = episodes[out_idx]
+        n = lengths[out_idx]
+        global_index = offsets[out_idx]
         chunk = out_idx // CHUNKS_SIZE
         data_path = out_root / "data" / f"chunk-{chunk:03d}" / f"episode_{out_idx:06d}.parquet"
         n_read, data = make_parquet(episode, data_path, out_idx, global_index)
@@ -290,11 +361,14 @@ def main() -> None:
             video_path = (
                 out_root / "videos" / f"chunk-{chunk:03d}" / key / f"episode_{out_idx:06d}.mp4"
             )
-            encode_video(episode / "images" / short, video_path, n)
+            encode_video(episode / "images" / short, video_path, n, threads=video_threads)
 
+        header, data = load_samples(episode)
         state = data[:, 1:30].astype(np.float32)
         action = data[:, 30:43].astype(np.float32)
         target = data[:, 43:49].astype(np.float32)
+        goal_rel = goal_relative(header, data)
+        route_rel = route_relative(episode, header, data)
         timestamp = (np.arange(n, dtype=np.float32) / float(FPS)).astype(np.float32)
         frame_index = np.arange(n, dtype=np.int64)
         ep_index = np.full(n, out_idx, dtype=np.int64)
@@ -307,19 +381,23 @@ def main() -> None:
             "observation.state": vector_stats(state),
             "action": vector_stats(action),
             "target_pos": vector_stats(target),
+            "goal_rel": vector_stats(goal_rel),
+            "route_rel": vector_stats(route_rel),
             "timestamp": scalar_stats(timestamp),
             "frame_index": scalar_stats(frame_index, int),
             "episode_index": scalar_stats(ep_index, int),
             "index": scalar_stats(index, int),
             "task_index": scalar_stats(task_index, int),
         }
-        stats_lines.append(json.dumps({"episode_index": out_idx, "stats": stats}) + "\n")
-        episode_lines.append(
-            json.dumps({"episode_index": out_idx, "tasks": [TASK], "length": n}) + "\n"
-        )
-        total_frames += n
-        global_index += n
-        print(f"  episode {out_idx:06d}: {n} frames ({episode.name})")
+        print(f"  episode {out_idx:06d}: {n} frames ({episode.name})", flush=True)
+        return (json.dumps({"episode_index": out_idx, "stats": stats}) + "\n",
+                json.dumps({"episode_index": out_idx, "tasks": [TASK], "length": n}) + "\n")
+
+    video_threads = max(2, 8 // max(1, jobs))
+    with ThreadPoolExecutor(max_workers=max(1, jobs)) as pool:
+        results = list(pool.map(work, range(len(episodes))))
+    stats_lines = [r[0] for r in results]
+    episode_lines = [r[1] for r in results]
 
     total_episodes = len(episodes)
     total_chunks = max(1, math.ceil(total_episodes / CHUNKS_SIZE))

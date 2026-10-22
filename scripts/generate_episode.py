@@ -17,17 +17,20 @@ import random
 from dataclasses import dataclass
 from pathlib import Path
 
+import threading
 import cv2
 import numpy as np
 
 SEABED_Z = 3.0
-DEPTH = 1.3
+DEPTH = 2.2
 AREA = (-25.0, 25.0, -15.0, 15.0)
 GRID = 0.5
 ROBOT_CLEARANCE = 0.55
 DOCK_X, DOCK_Y = 22.5, -11.0
 GOAL_X, GOAL_Y = 18.0, -11.0
+BOARD_X, BOARD_Y = 20.3, -11.0
 GOAL_YAW = 0.0
+_PREVIEW_LOCK = threading.Lock()
 
 
 @dataclass
@@ -394,7 +397,7 @@ def dock_block() -> str:
     # Target board facing the approach direction (-X)
     parts.append(f'''
 \t<static name="dock_target" type="box" physics="submerged">
-\t\t<dimensions xyz="0.06 1.4 0.9"/>
+\t\t<dimensions xyz="0.06 2.2 1.4"/>
 \t\t<origin rpy="0.0 0.0 0.0" xyz="0.0 0.0 0.0"/>
 \t\t<material name="Aluminium"/>
 \t\t<look name="dock_target"/>
@@ -424,46 +427,53 @@ def dock_light() -> str:
 '''
 
 
-def build_episode(out_dir: Path, seed: int, split: str, episode_index: int, attempts: int = 30,
-                  success_radius: float = 0.80, success_yaw: float = 0.40):
+def point_segment_distance(x: float, y: float, a: tuple[float, float],
+                           b: tuple[float, float]) -> float:
+    ax, ay = a
+    bx, by = b
+    dx = bx - ax
+    dy = by - ay
+    l2 = dx * dx + dy * dy
+    if l2 <= 0.0:
+        return math.hypot(x - ax, y - ay)
+    t = ((x - ax) * dx + (y - ay) * dy) / l2
+    t = max(0.0, min(1.0, t))
+    return math.hypot(x - (ax + t * dx), y - (ay + t * dy))
+
+
+def build_episode(out_dir: Path, seed: int, split: str, episode_index: int, attempts: int = 40,
+                  success_radius: float = 0.30, success_yaw: float = 0.10,
+                  start_frac: float = 0.0):
     rng = random.Random(seed)
-
-    # A deliberately serpentine lake route. The A* planner is free to choose the
-    # exact path; the rocks create a corridor with alternating gates.
-    centerline = [
-        (-21.0, 11.0), (-17.5, 8.0), (-14.0, 10.5), (-10.5, 6.5), (-7.0, 2.0),
-        (-2.0, 0.0), (2.0, 4.0), (6.5, 1.0), (9.5, -4.0), (13.0, -6.0),
-        (16.0, -9.0), (18.0, -11.0),
-    ]
-    seg = []
-    total = 0.0
-    for i in range(len(centerline) - 1):
-        x0, y0 = centerline[i]
-        x1, y1 = centerline[i + 1]
-        l = math.hypot(x1 - x0, y1 - y0)
-        seg.append((total, l, x0, y0, (x1 - x0) / l, (y1 - y0) / l))
-        total += l
-
-    def point_at(frac: float):
-        d = max(0.0, min(1.0, frac)) * total
-        for s0, l, x0, y0, tx, ty in seg:
-            if d <= s0 + l:
-                u = d - s0
-                return x0 + tx * u, y0 + ty * u, tx, ty
-        x0, y0, tx, ty = seg[-1][2], seg[-1][3], seg[-1][4], seg[-1][5]
-        return x0 + tx * l, y0 + ty * l, tx, ty
-
-    start = (centerline[0][0] + rng.uniform(-0.6, 0.6),
-             centerline[0][1] + rng.uniform(-0.6, 0.6))
     goal = (GOAL_X, GOAL_Y)
+    board = (BOARD_X, BOARD_Y)
+    start_frac = max(0.0, min(1.0, start_frac))
+    counts = {}
+
+    def bump(key):
+        counts[key] = counts.get(key, 0) + 1
 
     for attempt in range(attempts):
-        circles: list[Circle] = []
+        # Start 9-15 m from the goal, face the charging station, and keep the
+        # target visible. start_frac biases the distance: 0 -> close, 1 -> far.
+        dmin = 8.0 + 2.0 * start_frac
+        dmax = 12.0 + 3.0 * start_frac
+        for _ in range(200):
+            sx = rng.uniform(4.0, 13.0)
+            sy = rng.uniform(-11.0, 0.0)
+            if dmin <= math.hypot(sx - goal[0], sy - goal[1]) <= dmax:
+                break
+        else:
+            bump("no_start")
+            continue
+        start = (sx, sy)
+
+        circles: list[Circle] = [
+            Circle(DOCK_X, DOCK_Y, 2.5, SEABED_Z - 1.0, SEABED_Z, "dock")
+        ]
         rocks = []
         containers = []
         pipe_info = None
-
-        circles.append(Circle(DOCK_X, DOCK_Y, 2.5, SEABED_Z - 1.0, SEABED_Z, "dock"))
 
         def add_rock(x: float, y: float, scale: float):
             yaw = rng.uniform(-math.pi, math.pi)
@@ -471,110 +481,124 @@ def build_episode(out_dir: Path, seed: int, split: str, episode_index: int, atte
             rocks.append((x, y, scale, yaw))
             circles.append(Circle(x, y, r, SEABED_Z - 0.35 * scale, SEABED_Z, "rock"))
 
-        # Corridor walls along both sides of the centerline.
-        for frac in [i / 40.0 for i in range(1, 40)]:
-            x, y, tx, ty = point_at(frac)
-            nx, ny = -ty, tx
-            for side in (-1.0, 1.0):
-                if rng.random() < 0.72:
-                    off = rng.uniform(2.45, 2.95)
-                    jitter = rng.uniform(-0.5, 0.5)
-                    add_rock(x + nx * off * side + tx * jitter,
-                             y + ny * off * side + ty * jitter,
-                             rng.uniform(3.0, 4.6))
+        dx = goal[0] - start[0]
+        dy = goal[1] - start[1]
+        length = math.hypot(dx, dy)
+        ux, uy = dx / length, dy / length
+        px, py = -uy, ux
 
-        # Alternating gates force a visible slalom.
-        for k, frac in enumerate((0.18, 0.36, 0.54, 0.72, 0.88)):
-            x, y, tx, ty = point_at(frac)
-            nx, ny = -ty, tx
-            side = 1.0 if k % 2 == 0 else -1.0
-            off = rng.uniform(1.05, 1.35)
-            add_rock(x + nx * off * side + tx * rng.uniform(-0.25, 0.25),
-                     y + ny * off * side + ty * rng.uniform(-0.25, 0.25),
-                     rng.uniform(4.2, 5.0))
-            # A companion on the same side widens the barrier.
-            add_rock(x + nx * (off + rng.uniform(1.2, 1.8)) * side,
-                     y + ny * (off + rng.uniform(1.2, 1.8)) * side,
-                     rng.uniform(3.2, 4.0))
+        # Random obstacle field: 3-6 gates with random fraction/side/offset,
+        # 1-2 containers, an optional pipeline, and 10-24 scenery rocks.
+        n_gates = rng.randint(3, 6)
+        gate_fracs = sorted(rng.uniform(0.18, 0.88) for _ in range(n_gates))
+        for frac in gate_fracs:
+            side = 1.0 if rng.random() < 0.5 else -1.0
+            off = rng.uniform(0.9, 4.2)
+            bx = start[0] + dx * frac
+            by = start[1] + dy * frac
+            add_rock(bx + px * off * side + rng.uniform(-0.35, 0.35),
+                     by + py * off * side + rng.uniform(-0.35, 0.35),
+                     rng.uniform(3.0, 5.5))
 
-        # Two containers and one pipeline as larger landmarks.
-        for k, frac in enumerate((0.30, 0.64)):
-            x, y, tx, ty = point_at(frac)
-            nx, ny = -ty, tx
-            side = -1.0 if k == 0 else 1.0
-            off = rng.uniform(4.8, 5.4)
-            containers.append((x + nx * off * side, y + ny * off * side,
-                               rng.uniform(0.78, 0.92), rng.uniform(-math.pi, math.pi)))
-            c = containers[-1]
-            circles.append(Circle(c[0], c[1], 1.75 * c[2], SEABED_Z - 1.6 * c[2], SEABED_Z,
+        for _ in range(rng.randint(1, 2)):
+            frac = rng.uniform(0.20, 0.82)
+            side = 1.0 if rng.random() < 0.5 else -1.0
+            off = rng.uniform(2.4, 5.8)
+            bx = start[0] + dx * frac
+            by = start[1] + dy * frac
+            x = bx + px * off * side
+            y = by + py * off * side
+            scale = rng.uniform(0.75, 0.95)
+            containers.append((x, y, scale, rng.uniform(-math.pi, math.pi)))
+            circles.append(Circle(x, y, 1.75 * scale, SEABED_Z - 1.6 * scale, SEABED_Z,
                                   "container"))
 
-        if rng.random() < 0.85:
-            x, y, tx, ty = point_at(0.47)
-            nx, ny = -ty, tx
+        if rng.random() < 0.7:
+            frac = rng.uniform(0.30, 0.70)
             side = 1.0 if rng.random() < 0.5 else -1.0
-            pxp = x + nx * 5.2 * side
-            pyp = y + ny * 5.2 * side
-            yaw = math.atan2(ty, tx) + rng.uniform(-0.45, 0.45)
-            pipe_info = (pxp, pyp, 2.55, 0.55, yaw)
+            off = rng.uniform(3.0, 6.0)
+            bx = start[0] + dx * frac
+            by = start[1] + dy * frac
+            pxp = bx + px * off * side
+            pyp = by + py * off * side
+            yaw = math.atan2(uy, ux) + rng.uniform(-0.5, 0.5)
+            pipe_info = (pxp, pyp, 2.55, rng.uniform(0.5, 0.6), yaw)
             for t in (-1.5, 0.0, 1.5):
-                circles.append(Circle(pxp + math.cos(yaw) * t, pyp + math.sin(yaw) * t, 1.15,
-                                      SEABED_Z - 0.8, SEABED_Z, "pipe"))
+                circles.append(Circle(pxp + math.cos(yaw) * t, pyp + math.sin(yaw) * t,
+                                      1.15, SEABED_Z - 0.8, SEABED_Z, "pipe"))
 
-        # Scenery rocks outside the corridor.
-        for _ in range(12):
+        # Scenery rocks may sit close to the sight line; the visibility check
+        # below allows partial occlusion (2 of 3 target-board samples).
+        for _ in range(rng.randint(10, 24)):
             for _try in range(80):
                 x = rng.uniform(AREA[0] + 3, AREA[1] - 3)
                 y = rng.uniform(AREA[2] + 3, AREA[3] - 3)
-                if math.hypot(x - start[0], y - start[1]) < 5.0:
+                if math.hypot(x - start[0], y - start[1]) < 3.0:
                     continue
-                if math.hypot(x - goal[0], y - goal[1]) < 5.0:
+                if math.hypot(x - goal[0], y - goal[1]) < 3.0:
                     continue
-                if math.hypot(x - DOCK_X, y - DOCK_Y) < 6.0:
+                if math.hypot(x - DOCK_X, y - DOCK_Y) < 4.5:
                     continue
-                # Keep scenery outside the corridor envelope.
-                nearest = min(math.hypot(x - point_at(i / 100.0)[0],
-                                         y - point_at(i / 100.0)[1]) for i in range(101))
-                if nearest < 6.5:
+                if any(math.hypot(x - c.x, y - c.y) < c.r + 0.9 for c in circles):
                     continue
-                if any(math.hypot(x - c.x, y - c.y) < c.r + 1.8 for c in circles):
-                    continue
-                add_rock(x, y, rng.uniform(2.8, 4.4))
+                add_rock(x, y, rng.uniform(2.6, 4.8))
                 break
 
         grasses = []
-        for _ in range(14):
+        for _ in range(rng.randint(8, 16)):
             for _try in range(50):
                 x = rng.uniform(AREA[0] + 3, AREA[1] - 3)
                 y = rng.uniform(AREA[2] + 3, AREA[3] - 3)
-                if math.hypot(x - goal[0], y - goal[1]) < 5.0:
+                if math.hypot(x - goal[0], y - goal[1]) < 3.5:
                     continue
-                if any(math.hypot(x - c.x, y - c.y) < c.r + 1.2 for c in circles):
+                if any(math.hypot(x - c.x, y - c.y) < c.r + 1.0 for c in circles):
                     continue
                 grasses.append((x, y, rng.uniform(1.2, 2.0), rng.uniform(-math.pi, math.pi)))
                 break
 
+        if any(math.hypot(start[0] - c.x, start[1] - c.y) < c.r + 1.0 for c in circles):
+            bump("start_clear")
+            continue
+
+        # Require at least 2 of the 3 target-board samples to be visible. This
+        # keeps the charging station recognizable at frame 0 while allowing
+        # rocks to partially occlude the board, varying the scene difficulty.
+        board_samples = (
+            (BOARD_X, BOARD_Y - 0.9),
+            (BOARD_X, BOARD_Y),
+            (BOARD_X, BOARD_Y + 0.9),
+        )
+        los_circles = [c for c in circles if c.kind != "dock"]
+        target_visible = sum(
+            1 for p in board_samples if line_of_sight(start, p, los_circles, extra=0.1)
+        )
+        if target_visible < 2:
+            bump("los")
+            continue
+
         raw = astar(start, goal, circles)
         if raw is None:
+            bump("astar")
             continue
         simple = simplify(raw, circles)
         dense = densify(simple)
-        if len(dense) < 40:
+        if len(dense) < 30:
+            bump("short")
             continue
-        if path_clearance(dense, circles) < ROBOT_CLEARANCE - 0.03:
+        if path_clearance(dense, circles) < 0.45:
+            bump("clearance")
             continue
-        if turning_angle(dense) < 0.9:
+        if turning_angle(dense) < 0.15:
+            bump("turn")
             continue
+        bump("ok")
         break
     else:
-        raise RuntimeError(f"could not generate a valid episode for seed {seed}")
+        raise RuntimeError(f"could not generate a valid episode for seed {seed}: {counts}")
 
-    # Snap the robot to the first free A* cell so it never starts inside an obstacle.
-    start = (dense[0][0], dense[0][1])
-    i0 = min(8, len(dense) - 2)
-    start_yaw = math.atan2(dense[i0][1] - start[1], dense[i0][0] - start[0])
-
-    jerlov = rng.uniform(0.12, 0.26)
+    # Face the target board at the initial frame.
+    start_yaw = math.atan2(board[1] - start[1], board[0] - start[0])
+    jerlov = rng.uniform(0.10, 0.18)
     sun_az = rng.uniform(-180.0, 180.0)
     sun_el = rng.uniform(35.0, 80.0)
 
@@ -619,15 +643,19 @@ def build_episode(out_dir: Path, seed: int, split: str, episode_index: int, atte
         f.write(f"episode_index={episode_index}\n")
         f.write(f"start_x={start[0]:.4f}\nstart_y={start[1]:.4f}\nstart_z={DEPTH:.4f}\nstart_yaw={start_yaw:.6f}\n")
         f.write(f"goal_x={GOAL_X:.4f}\ngoal_y={GOAL_Y:.4f}\ngoal_z={DEPTH:.4f}\ngoal_yaw={GOAL_YAW:.6f}\n")
-        f.write(f"depth={DEPTH}\nsuccess_radius={success_radius:.3f}\nsuccess_yaw={success_yaw:.3f}\nmax_time=150.0\n")
+        f.write(f"depth={DEPTH}\nsuccess_radius={success_radius:.3f}\nsuccess_yaw={success_yaw:.3f}\n")
+        f.write(f"target_visible_samples={target_visible}\nmax_time=75.0\n")
 
-    make_preview(out_dir / "preview.png", start, goal, circles, dense, rocks, containers, pipe_info)
+    with _PREVIEW_LOCK:
+        make_preview(out_dir / "preview.png", start, goal, circles, dense, rocks, containers,
+                     pipe_info)
     return {
         "start": (start[0], start[1], start_yaw),
         "path_length": sum(math.dist(dense[i][:2], dense[i + 1][:2]) for i in range(len(dense) - 1)),
         "turning": turning_angle(dense),
         "clearance": path_clearance(dense, circles),
         "rocks": len(rocks),
+        "target_visible": target_visible,
     }
 
 
@@ -670,11 +698,18 @@ def main():
     parser.add_argument("--seed", type=int, default=0)
     parser.add_argument("--split", default="train", choices=["train", "test", "debug"])
     parser.add_argument("--episode-index", type=int, default=0)
-    parser.add_argument("--success-radius", type=float, default=0.80)
-    parser.add_argument("--success-yaw", type=float, default=0.40)
+    parser.add_argument("--success-radius", type=float, default=0.30)
+    parser.add_argument("--success-yaw", type=float, default=0.10)
+    parser.add_argument("--start-frac", type=float, default=0.0,
+                        help="0=close start (9-12 m), 1=far start (11-15 m); target stays visible")
+    parser.add_argument("--depth", type=float, default=None, help="cruise depth (NED z, metres)")
     args = parser.parse_args()
+    if args.depth is not None:
+        global DEPTH
+        DEPTH = args.depth
     info = build_episode(Path(args.out), args.seed, args.split, args.episode_index,
-                         success_radius=args.success_radius, success_yaw=args.success_yaw)
+                         success_radius=args.success_radius, success_yaw=args.success_yaw,
+                         start_frac=args.start_frac)
     print(f"[generate] {args.out}: {info}")
 
 

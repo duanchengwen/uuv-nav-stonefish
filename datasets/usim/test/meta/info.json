@@ -2,7 +2,7 @@
     "codebase_version": "v2.1",
     "robot_type": "AgileBot",
     "total_episodes": 3,
-    "total_frames": 2498,
+    "total_frames": 758,
     "total_tasks": 1,
     "total_videos": 6,
     "total_chunks": 1,
@@ -93,6 +93,27 @@
             ],
             "names": [
                 "target_pos"
+            ]
+        },
+        "goal_rel": {
+            "dtype": "float32",
+            "shape": [
+                2
+            ],
+            "names": [
+                "goal_dist",
+                "goal_bearing"
+            ]
+        },
+        "route_rel": {
+            "dtype": "float32",
+            "shape": [
+                3
+            ],
+            "names": [
+                "goal_dist",
+                "route_dist",
+                "route_bearing"
             ]
         },
         "timestamp": {

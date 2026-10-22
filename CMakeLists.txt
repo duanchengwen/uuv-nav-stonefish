@@ -17,6 +17,7 @@ set(UUV_NAV_SOURCES
     src/Autopilot.cpp
     src/DataRecorder.cpp
     src/EpisodeConfig.cpp
+    src/PolicyBridge.cpp
 )
 
 add_executable(uuv_nav ${UUV_NAV_SOURCES})

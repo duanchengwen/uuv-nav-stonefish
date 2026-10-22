@@ -53,7 +53,8 @@ bool readLast(sf::ScalarSensor* sensor, std::vector<double>& values)
 }  // namespace
 
 NavSimulationManager::NavSimulationManager(sf::Scalar stepsPerSecond, std::string scenePath,
-                                           std::string episodeDir, bool thrustTest, bool showCamera)
+                                           std::string episodeDir, bool thrustTest, bool showCamera,
+                                           int policyPort, bool directExpert)
     : sf::SimulationManager(stepsPerSecond, sf::SolverType::SOLVER_SI,
                             sf::CollisionFilteringType::COLLISION_EXCLUSIVE),
       scenePath_(std::move(scenePath)),
@@ -64,8 +65,16 @@ NavSimulationManager::NavSimulationManager(sf::Scalar stepsPerSecond, std::strin
     std::string error;
     if (!loadEpisode(episodeDir_, cfg_, error))
         throw std::runtime_error("episode config: " + error);
-    autopilot_ = std::make_unique<Autopilot>(cfg_);
+    autopilot_ = std::make_unique<Autopilot>(cfg_, directExpert);
     recorder_ = std::make_unique<DataRecorder>(episodeDir_, cfg_);
+    if (policyPort > 0)
+    {
+        bridge_ = std::make_unique<PolicyBridge>(policyPort);
+        // The expert always runs the thrusters near the cruise operating point, so the recorded
+        // state PWM sits around +-0.8 (ch0-3) and +0.1 (ch4-7). Start from the same point:
+        // feeding zeros is far outside the training distribution.
+        policyPwm_ = {-0.804, -0.777, 0.778, 0.797, 0.122, 0.119, 0.096, 0.093};
+    }
 }
 
 NavSimulationManager::~NavSimulationManager()
@@ -241,12 +250,75 @@ void NavSimulationManager::processSample()
     const double dt = lastSampleTime_ >= 0.0 ? std::clamp(simTime - lastSampleTime_, 0.02, 0.5) : 0.1;
     lastSampleTime_ = simTime;
 
-    auto output = autopilot_->step(robotState, sonar, dt);
-    setPwm(output.pwm);
+    // Collect the observation first; the control source is either the scripted autopilot
+    // or an external policy connected over PolicyBridge.
+    std::array<double, 8> pwm{};
+    std::array<float, 6> targetLocal{};
+    double goalDistance = 0.0;
+    double minSonar = 1e9;
+    double goalBearing = 0.0;
+    double routeDistance = 0.0;
+    double routeBearing = 0.0;
+    bool avoidanceActive = false;
+
+    if (bridge_)
+    {
+        std::array<double, 8> cmd{};
+        if (bridge_->popCommand(cmd))
+            policyPwm_ = cmd;
+        pwm = policyPwm_;
+        setPwm(pwm);
+        const double dx = cfg_.goalX - robotState.position[0];
+        const double dy = cfg_.goalY - robotState.position[1];
+        const double dz = cfg_.goalZ - robotState.position[2];
+        goalDistance = std::sqrt(dx * dx + dy * dy + dz * dz);
+        goalBearing = wrapAngle(std::atan2(dy, dx) - robotState.yaw);
+
+        // Global-planner style look-ahead: walk 5 m along the planned route from the closest
+        // path point. The route bearing stays small, like the expert's own steering signal.
+        const auto& path = cfg_.path;
+        if (path.size() >= 2)
+        {
+            size_t best = 0;
+            double bestd = 1e18;
+            for (size_t i = 0; i < path.size(); ++i)
+            {
+                const double d = std::hypot(path[i].x - robotState.position[0],
+                                            path[i].y - robotState.position[1]);
+                if (d < bestd)
+                {
+                    bestd = d;
+                    best = i;
+                }
+            }
+            size_t i = best;
+            double acc = 0.0;
+            while (i + 1 < path.size() && acc < 5.0)
+            {
+                acc += std::hypot(path[i + 1].x - path[i].x, path[i + 1].y - path[i].y);
+                ++i;
+            }
+            const double rdx = path[i].x - robotState.position[0];
+            const double rdy = path[i].y - robotState.position[1];
+            routeDistance = std::hypot(rdx, rdy);
+            routeBearing = wrapAngle(std::atan2(rdy, rdx) - robotState.yaw);
+        }
+    }
+    else
+    {
+        auto output = autopilot_->step(robotState, sonar, dt);
+        pwm = output.pwm;
+        setPwm(pwm);
+        goalDistance = output.goalDistance;
+        minSonar = output.minSonar;
+        avoidanceActive = output.avoidanceActive;
+        for (int i = 0; i < 6; ++i)
+            targetLocal[i] = static_cast<float>(output.targetLocal[i]);
+    }
 
     std::array<float, 29> state{};
     for (int i = 0; i < 8; ++i)
-        state[5 + i] = static_cast<float>(output.pwm[i]);
+        state[5 + i] = static_cast<float>(pwm[i]);
     state[18] = static_cast<float>(robotState.velocity[0]);
     state[19] = static_cast<float>(robotState.velocity[1]);
     state[20] = static_cast<float>(robotState.velocity[2]);
@@ -261,7 +333,7 @@ void NavSimulationManager::processSample()
 
     std::array<float, 13> action{};
     for (int i = 0; i < 8; ++i)
-        action[5 + i] = static_cast<float>(output.pwm[i]);
+        action[5 + i] = static_cast<float>(pwm[i]);
 
     // The dataset state uses DVL velocity, not odometry velocity, for dvl_v.
     std::vector<double> dvl;
@@ -284,16 +356,17 @@ void NavSimulationManager::processSample()
     if ((ego.empty() || wrist.empty()) && frameIndex_ == 0)
         return;
 
+    if (bridge_)
+        bridge_->sendFrame(state, ego, wrist, goalDistance, robotState.position, goalBearing,
+                           routeDistance, routeBearing);
+
     double minClearance = 1e9;
     const bool collision =
         checkCollision(robotState.position[0], robotState.position[1], robotState.position[2], minClearance);
     minClearance_ = std::min(minClearance_, minClearance);
 
-    std::array<float, 6> targetLocal{};
-    for (int i = 0; i < 6; ++i)
-        targetLocal[i] = static_cast<float>(output.targetLocal[i]);
     recorder_->addFrame(frameIndex_, simTime, state, action, targetLocal, robotState.position,
-                        dvlAltitude, output.goalDistance, output.minSonar, output.avoidanceActive, ego,
+                        dvlAltitude, goalDistance, minSonar, avoidanceActive, robotState.yaw, ego,
                         wrist);
 
     if (frameIndex_ % 10 == 0 || simTime - lastPrintTime_ > 2.0)
@@ -303,9 +376,9 @@ void NavSimulationManager::processSample()
             "[nav] t=%6.2f pos=(%6.2f,%6.2f,%5.2f) goal=%5.2f v=(%5.2f,%5.2f,%5.2f) sonar=%5.2f "
             "avoid=%d pwm=(%5.2f,%5.2f,%5.2f,%5.2f)\n",
             simTime, robotState.position[0], robotState.position[1], robotState.position[2],
-            output.goalDistance, robotState.velocity[0], robotState.velocity[1], robotState.velocity[2],
-            output.minSonar, output.avoidanceActive ? 1 : 0, output.pwm[0], output.pwm[1], output.pwm[2],
-            output.pwm[3]);
+            goalDistance, robotState.velocity[0], robotState.velocity[1], robotState.velocity[2],
+            minSonar, avoidanceActive ? 1 : 0, pwm[0], pwm[1], pwm[2],
+            pwm[3]);
         std::fflush(stdout);
     }
 
@@ -316,7 +389,7 @@ void NavSimulationManager::processSample()
                                    robotState.velocity[1] * robotState.velocity[1] +
                                    robotState.velocity[2] * robotState.velocity[2]);
 
-    if (output.goalDistance < cfg_.successRadius && std::fabs(yawError) < cfg_.successYaw && speed < 0.55)
+    if (goalDistance < cfg_.successRadius && std::fabs(yawError) < cfg_.successYaw && speed < 0.55)
         ++goalHold_;
     else
         goalHold_ = 0;
@@ -345,9 +418,9 @@ void NavSimulationManager::processSample()
     {
         std::array<double, 8> zero{};
         setPwm(zero);
-        recorder_->finalize(success, reason, simTime, output.goalDistance, minClearance_);
+        recorder_->finalize(success, reason, simTime, goalDistance, minClearance_);
         std::printf("[nav] episode finished: success=%d reason=%s frames=%d t=%.2f goal=%.3f clearance=%.3f\n",
-                    success ? 1 : 0, reason.c_str(), recorder_->frames(), simTime, output.goalDistance,
+                    success ? 1 : 0, reason.c_str(), recorder_->frames(), simTime, goalDistance,
                     minClearance_);
         std::fflush(stdout);
         finished_ = true;

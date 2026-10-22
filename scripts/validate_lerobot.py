@@ -18,6 +18,8 @@ EXPECTED_KEYS = [
     "observation.state",
     "action",
     "target_pos",
+    "goal_rel",
+    "route_rel",
     "timestamp",
     "frame_index",
     "episode_index",
@@ -57,12 +59,18 @@ def main() -> None:
     state_shape = info["features"]["observation.state"]["shape"]
     action_shape = info["features"]["action"]["shape"]
     target_shape = info["features"]["target_pos"]["shape"]
+    goal_shape = info["features"]["goal_rel"]["shape"]
+    route_shape = info["features"]["route_rel"]["shape"]
     if state_shape != [29]:
         errors.append(f"state shape {state_shape}")
     if action_shape != [13]:
         errors.append(f"action shape {action_shape}")
     if target_shape != [6]:
         errors.append(f"target_pos shape {target_shape}")
+    if goal_shape != [2]:
+        errors.append(f"goal_rel shape {goal_shape}")
+    if route_shape != [3]:
+        errors.append(f"route_rel shape {route_shape}")
     for key in ("observation.images.ego", "observation.images.wrist"):
         feat = info["features"][key]
         if feat["shape"] != [240, 320, 3]:
@@ -97,8 +105,11 @@ def main() -> None:
         state = np.asarray(table["observation.state"].to_pylist(), dtype=np.float32)
         action = np.asarray(table["action"].to_pylist(), dtype=np.float32)
         target = np.asarray(table["target_pos"].to_pylist(), dtype=np.float32)
-        if state.shape != (n, 29) or action.shape != (n, 13) or target.shape != (n, 6):
-            errors.append(f"{parquet.name}: array shapes {state.shape} {action.shape} {target.shape}")
+        goal = np.asarray(table["goal_rel"].to_pylist(), dtype=np.float32)
+        route = np.asarray(table["route_rel"].to_pylist(), dtype=np.float32)
+        if (state.shape != (n, 29) or action.shape != (n, 13) or target.shape != (n, 6)
+                or goal.shape != (n, 2) or route.shape != (n, 3)):
+            errors.append(f"{parquet.name}: array shapes {state.shape} {action.shape} {target.shape} {goal.shape} {route.shape}")
         if not (np.isfinite(state).all() and np.isfinite(action).all() and np.isfinite(target).all()):
             errors.append(f"{parquet.name}: non-finite values")
         if not np.allclose(action[:, 5:], state[:, 5:13], atol=1e-5):
@@ -136,7 +147,8 @@ def main() -> None:
         errors.append("episodes_stats count mismatch")
     for line in stats_lines[:1]:
         rec = json.loads(line)
-        for key in ("observation.state", "action", "target_pos", "observation.images.ego"):
+        for key in ("observation.state", "action", "target_pos", "goal_rel", "route_rel",
+                    "observation.images.ego"):
             if key not in rec["stats"]:
                 errors.append(f"stats missing {key}")
 

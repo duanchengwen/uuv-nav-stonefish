@@ -22,3 +22,7 @@ __pycache__/
 # Local editor settings
 .vscode/
 .idea/
+
+# Local goal/route-conditioned experiment datasets (not the sample dataset)
+datasets/usim_goal/
+datasets/usim_route/

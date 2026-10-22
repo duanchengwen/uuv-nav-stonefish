@@ -1,5 +1,6 @@
 #include "DataRecorder.h"
 
+#include <cmath>
 #include <cstdio>
 #include <filesystem>
 #include <iomanip>
@@ -10,7 +11,8 @@
 namespace uuv
 {
 DataRecorder::DataRecorder(const std::string& episodeDir, const EpisodeConfig& cfg)
-    : episodeDir_(episodeDir), egoDir_(episodeDir + "/images/ego"), wristDir_(episodeDir + "/images/wrist")
+    : episodeDir_(episodeDir), egoDir_(episodeDir + "/images/ego"), wristDir_(episodeDir + "/images/wrist"),
+      goalX_(cfg.goalX), goalY_(cfg.goalY)
 {
     // A rerun in the same episode directory must start from a clean image
     // sequence, otherwise stale high-index PNGs would confuse the ROS bridge.
@@ -28,7 +30,7 @@ DataRecorder::DataRecorder(const std::string& episodeDir, const EpisodeConfig& c
         stream_ << ",action_" << i;
     for (int i = 0; i < 6; ++i)
         stream_ << ",target_" << i;
-    stream_ << ",pos_x,pos_y,pos_z,dvl_alt,goal_dist,min_sonar,avoidance\n";
+    stream_ << ",pos_x,pos_y,pos_z,dvl_alt,goal_dist,min_sonar,avoidance,yaw,goal_bearing\n";
 
     std::ofstream cfgOut(episodeDir_ + "/episode_meta.txt");
     cfgOut << "task=" << cfg.task << "\n";
@@ -42,8 +44,8 @@ DataRecorder::DataRecorder(const std::string& episodeDir, const EpisodeConfig& c
 void DataRecorder::addFrame(int frameIndex, double timestamp, const std::array<float, 29>& state,
                             const std::array<float, 13>& action, const std::array<float, 6>& target,
                             const std::array<double, 3>& position, double dvlAltitude,
-                            double goalDistance, double minSonar, bool avoidance, const cv::Mat& egoBgr,
-                            const cv::Mat& wristBgr)
+                            double goalDistance, double minSonar, bool avoidance, double yaw,
+                            const cv::Mat& egoBgr, const cv::Mat& wristBgr)
 {
     cv::Mat ego;
     cv::Mat wrist;
@@ -86,8 +88,11 @@ void DataRecorder::addFrame(int frameIndex, double timestamp, const std::array<f
         stream_ << "," << v;
     for (float v : target)
         stream_ << "," << v;
+    const double worldBearing = std::atan2(goalY_ - position[1], goalX_ - position[0]);
+    const double bearing = std::atan2(std::sin(worldBearing - yaw), std::cos(worldBearing - yaw));
     stream_ << "," << position[0] << "," << position[1] << "," << position[2] << "," << dvlAltitude
-            << "," << goalDistance << "," << minSonar << "," << (avoidance ? 1 : 0) << "\n";
+            << "," << goalDistance << "," << minSonar << "," << (avoidance ? 1 : 0)
+            << "," << yaw << "," << bearing << "\n";
     ++frameCount_;
 }
 

@@ -15,6 +15,7 @@
 #include "Autopilot.h"
 #include "DataRecorder.h"
 #include "EpisodeConfig.h"
+#include "PolicyBridge.h"
 
 namespace sf
 {
@@ -34,7 +35,8 @@ class NavSimulationManager : public sf::SimulationManager
 {
 public:
     NavSimulationManager(sf::Scalar stepsPerSecond, std::string scenePath, std::string episodeDir,
-                         bool thrustTest = false, bool showCamera = false);
+                         bool thrustTest = false, bool showCamera = false, int policyPort = 0,
+                         bool directExpert = false);
     ~NavSimulationManager() override;
 
     void BuildScenario() override;
@@ -61,6 +63,8 @@ private:
     EpisodeConfig cfg_;
     std::unique_ptr<Autopilot> autopilot_;
     std::unique_ptr<DataRecorder> recorder_;
+    std::unique_ptr<PolicyBridge> bridge_;  // non-null when an external policy drives the ROV
+    std::array<double, 8> policyPwm_{};
 
     sf::Robot* robot_ = nullptr;
     std::array<sf::Thruster*, 8> thrusters_{};

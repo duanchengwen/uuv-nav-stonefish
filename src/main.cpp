@@ -46,6 +46,8 @@ int main(int argc, char** argv)
     std::string episodeDir;
     bool thrustTest = false;
     bool showCamera = false;
+    int policyPort = 0;
+    bool directExpert = false;
 
     for (int i = 1; i < argc; ++i)
     {
@@ -58,9 +60,14 @@ int main(int argc, char** argv)
             thrustTest = true;
         else if (arg == "--show-camera")
             showCamera = true;
+        else if (arg == "--policy-bridge" && i + 1 < argc)
+            policyPort = std::stoi(argv[++i]);
+        else if (arg == "--direct-expert")
+            directExpert = true;
         else if (arg == "--help" || arg == "-h")
         {
-            std::cout << "Usage: uuv_nav --scene <scene.scn> --episode-dir <dir> [--thrust-test] [--show-camera]\n";
+            std::cout << "Usage: uuv_nav --scene <scene.scn> --episode-dir <dir> [--thrust-test] "
+                         "[--show-camera] [--policy-bridge <port>]\n";
             return 0;
         }
         else
@@ -72,7 +79,8 @@ int main(int argc, char** argv)
 
     if (scenePath.empty() || episodeDir.empty())
     {
-        std::cerr << "Usage: uuv_nav --scene <scene.scn> --episode-dir <dir> [--thrust-test] [--show-camera]\n";
+        std::cerr << "Usage: uuv_nav --scene <scene.scn> --episode-dir <dir> [--thrust-test] "
+                     "[--show-camera] [--policy-bridge <port>]\n";
         return 2;
     }
     if (scenePath.front() != '/')
@@ -102,7 +110,8 @@ int main(int argc, char** argv)
     uuv::NavSimulationManager* manager = nullptr;
     try
     {
-        manager = new uuv::NavSimulationManager(500.0, scenePath, episodeDir, thrustTest, showCamera);
+        manager = new uuv::NavSimulationManager(500.0, scenePath, episodeDir, thrustTest, showCamera,
+                                                policyPort, directExpert);
     }
     catch (const std::exception& e)
     {

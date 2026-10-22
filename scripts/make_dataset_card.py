@@ -17,11 +17,13 @@ def read_kv(path: Path) -> dict:
     return out
 
 
-def episode_stats(raw: Path) -> tuple[int, int, float, int, float]:
+def episode_stats(raw: Path) -> tuple[int, int, float, int, float, int, int]:
     ok = 0
     total = 0
     frames = 0
     duration = 0.0
+    full_vis = 0
+    partial_vis = 0
     for d in sorted(raw.iterdir()):
         if not d.is_dir() or not (d / "result.txt").exists():
             continue
@@ -31,7 +33,12 @@ def episode_stats(raw: Path) -> tuple[int, int, float, int, float]:
             ok += 1
             frames += int(res.get("frames", 0))
             duration += float(res.get("sim_time", 0.0))
-    return ok, total, duration, frames, (duration / ok if ok else 0.0)
+            vis = int(read_kv(d / "episode.cfg").get("target_visible_samples", "3"))
+            if vis >= 3:
+                full_vis += 1
+            else:
+                partial_vis += 1
+    return ok, total, duration, frames, (duration / ok if ok else 0.0), full_vis, partial_vis
 
 
 def main() -> None:
@@ -44,8 +51,8 @@ def main() -> None:
     root = Path(args.datasets)
     train_info = json.loads((root / "train/meta/info.json").read_text())
     test_info = json.loads((root / "test/meta/info.json").read_text())
-    tr_ok, tr_total, tr_dur, tr_frames, tr_avg = episode_stats(Path(args.raw_train))
-    te_ok, te_total, te_dur, te_frames, te_avg = episode_stats(Path(args.raw_test))
+    tr_ok, tr_total, tr_dur, tr_frames, tr_avg, tr_full, tr_partial = episode_stats(Path(args.raw_train))
+    te_ok, te_total, te_dur, te_frames, te_avg, te_full, te_partial = episode_stats(Path(args.raw_test))
 
     text = f"""# UUV charge-station navigation dataset (USIM-compatible)
 
@@ -57,9 +64,12 @@ USIM `goto_charge_station` schema.
 
 - Instruction: **"Go to the charge station"**
 - Robot: BlueROV2, 8 thrusters, no manipulator (USIM navigation configuration)
-- Scene: 50 m x 30 m shallow lake with a serpentine rock field, containers, a pipeline,
-  and a solar-powered charging dock; the UUV must avoid obstacles and dock.
-- Expert: A* global path + pure-pursuit tracking + 90 deg multibeam local avoidance.
+- Scene: 50 m x 30 m shallow lake, cruise depth **2.2 m** (0.8 m above the seabed),
+  with a rock slalom, containers, a pipeline, and a solar-powered charging dock.
+- Start: 8-15 m from the dock, facing the charging target. The green/yellow target
+  board is visible in the first camera frame, matching the USIM navigation setup.
+- Expert: A* global path + pure-pursuit tracking + 90 deg multibeam local avoidance +
+  terminal docking control (success radius 0.30 m, heading error 0.10 rad).
 
 ## Splits
 
@@ -69,7 +79,14 @@ USIM `goto_charge_station` schema.
 | test | {te_ok} | {te_frames} | {te_avg:.1f} s |
 
 All episodes are successful expert demonstrations (collection failures are discarded
-before conversion). Each episode is 10 Hz.
+before conversion). Each episode is 10 Hz and starts with the charging station in view.
+
+Start visibility (target board, 3 sample points):
+
+| Split | Fully visible (3/3) | Partially occluded (2/3) |
+|---|---:|---:|
+| train | {tr_full} | {tr_partial} |
+| test | {te_full} | {te_partial} |
 
 ## Observations / actions
 

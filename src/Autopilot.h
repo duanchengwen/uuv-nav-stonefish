@@ -32,7 +32,7 @@ struct AutopilotOutput
 class Autopilot
 {
 public:
-    explicit Autopilot(const EpisodeConfig& cfg);
+    explicit Autopilot(const EpisodeConfig& cfg, bool directMode = false);
 
     void reset();
     AutopilotOutput step(const RobotState& state, const std::vector<double>& sonar, double dt);
@@ -53,11 +53,23 @@ private:
 
     Vec3 selectTarget(const RobotState& state, const std::vector<double>& sonar, double minSonar,
                       bool& avoidanceActive);
+    Vec3 planLocalTarget(const RobotState& state, const std::vector<double>& sonar, const Vec3& goal,
+                         double goalDist, bool& avoidanceActive);
     std::array<double, 8> allocate(double fx, double fy, double fz, double roll, double pitch, double yaw) const;
 
     EpisodeConfig cfg_;
     std::vector<double> cumulative_;
     std::size_t nearestIndex_ = 0;
+
+    // Direct-bearing expert: steer at the goal, detour around sonar obstacles, then resume.
+    bool directMode_ = false;
+    bool detourActive_ = false;
+    double detourSign_ = 1.0;
+    int detourHold_ = 0;
+    // Committed detour side: -1 = left, +1 = right, 0 = none. Kept until the direct path clears,
+    // which prevents left/right dithering in symmetric gate situations.
+    int detourSide_ = 0;
+    int clearHold_ = 0;
 
     // Integrators
     double ix_ = 0.0;
